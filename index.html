@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Victor Gertner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0a0a0a;
+  --white: #f5f5f0;
+  --gray: #888;
+  --light: #e8e8e3;
+  --border: #d0d0cb;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--white);
+  color: var(--black);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: var(--white);
+  border-bottom: 2px solid var(--black);
+  display: flex;
+  align-items: stretch;
+  height: 48px;
+}
+
+.nav-name {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--black);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin-left: auto;
+}
+
+.nav-links li a {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 22px;
+  border-left: 1px solid var(--border);
+  transition: color 0.1s, background 0.1s;
+}
+
+.nav-links li a:hover,
+.nav-links li a.active {
+  color: var(--black);
+  background: var(--light);
+}
+
+/* SECTIONS */
+main { padding-top: 48px; }
+
+.section {
+  border-bottom: 1px solid var(--border);
+}
+
+.section-inner {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 80px 40px;
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ABOUT */
+.about-rule { border: none; border-top: 2px solid var(--black); margin-bottom: 28px; }
+
+h1 {
+  font-family: var(--mono);
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 500;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.position {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--gray);
+  letter-spacing: 1px;
+  margin-bottom: 36px;
+}
+
+.bio {
+  max-width: 560px;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #444;
+  margin-bottom: 40px;
+}
+
+.contact-row { display: flex; flex-wrap: wrap; }
+
+.contact-link {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--black);
+  padding: 10px 18px;
+  border: 1px solid var(--black);
+  margin-right: -1px;
+  margin-bottom: -1px;
+  transition: background 0.1s, color 0.1s;
+  position: relative;
+}
+.contact-link:hover { background: var(--black); color: var(--white); z-index: 1; }
+
+/* PUBLICATIONS */
+.pub-item {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 0 24px;
+  padding: 22px 16px;
+  border-top: 1px solid var(--border);
+  margin: 0 -16px;
+  transition: background 0.1s;
+}
+.pub-item:last-child { border-bottom: 1px solid var(--border); }
+.pub-item:hover { background: var(--light); }
+
+.pub-year { font-family: var(--mono); font-size: 11px; color: var(--gray); padding-top: 3px; }
+.pub-title { font-size: 14px; font-weight: 500; line-height: 1.4; margin-bottom: 5px; }
+.pub-venue { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 0.5px; margin-bottom: 5px; }
+.pub-authors { font-size: 12px; font-weight: 300; color: #666; margin-bottom: 10px; }
+.pub-tags { display: flex; flex-wrap: wrap; }
+.pub-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--gray);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  margin-right: -1px;
+  transition: all 0.1s;
+  position: relative;
+  cursor: pointer;
+  background: none;
+}
+.pub-tag:hover { color: var(--black); border-color: var(--black); z-index: 1; }
+.pub-tag.hi { color: var(--black); border-color: var(--black); }
+
+/* MISC */
+.misc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--black);
+  border-left: 1px solid var(--black);
+}
+.misc-cell {
+  border-right: 1px solid var(--black);
+  border-bottom: 1px solid var(--black);
+  padding: 24px;
+}
+.misc-cell-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 12px;
+}
+.misc-cell p, .misc-cell li {
+  font-size: 13px;
+  font-weight: 300;
+  color: #555;
+  line-height: 1.7;
+}
+.misc-cell ul { list-style: none; }
+.misc-cell ul li::before { content: '— '; color: var(--gray); font-family: var(--mono); }
+
+/* FOOTER */
+footer {
+  border-top: 2px solid var(--black);
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+footer span { font-family: var(--mono); font-size: 10px; color: var(--gray); letter-spacing: 1px; }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,10,0.88);
+  z-index: 500;
+  overflow-y: auto;
+  padding: 60px 20px 40px;
+}
+.modal-overlay.open { display: block; }
+.modal-box {
+  background: var(--white);
+  max-width: 900px;
+  margin: 0 auto;
+  border: 2px solid var(--black);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); }
+.modal-close {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--black);
+  padding: 5px 12px;
+  cursor: pointer;
+  color: var(--black);
+  transition: all 0.1s;
+}
+.modal-close:hover { background: var(--black); color: var(--white); }
+.modal-body { padding: 28px; }
+
+/* POSTER */
+.poster * { box-sizing: border-box; margin: 0; padding: 0; }
+.poster { font-family: var(--sans); }
+.p-rule { border: none; border-top: 2px solid var(--black); margin-bottom: 16px; }
+.p-h1 { font-family: var(--mono); font-size: 26px; font-weight: 500; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+.p-meta { font-family: var(--mono); font-size: 9px; color: var(--gray); letter-spacing: 1px; margin-bottom: 16px; }
+.p-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--black); border-left: 1px solid var(--black); }
+.p-col { border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); padding: 14px; }
+.p-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); margin-bottom: 8px; }
+.p-p { font-size: 11px; line-height: 1.65; color: #555; }
+.p-formula { font-family: var(--mono); font-size: 11px; padding: 8px 10px; border-left: 3px solid var(--black); margin: 8px 0; color: var(--black); }
+.p-stats { display: grid; grid-template-columns: 1fr 1fr; border-left: 1px solid var(--black); }
+.p-stat { border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); padding: 12px; }
+.p-bignum { font-family: var(--mono); font-size: 28px; font-weight: 500; line-height: 1; display: block; }
+.p-biglbl { font-family: var(--mono); font-size: 9px; color: var(--gray); margin-top: 3px; display: block; }
+.p-grid2 { display: grid; grid-template-columns: 1.3fr 1fr; border-left: 1px solid var(--black); }
+.p-cell { border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); padding: 14px; }
+.p-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
+.p-table th { text-align: left; padding: 5px 6px; border-bottom: 2px solid var(--black); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.p-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); color: #555; }
+.p-table tr.hl td { color: var(--black); font-weight: 500; }
+.p-brow { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.p-blbl { font-family: var(--mono); font-size: 9px; width: 110px; flex-shrink: 0; color: #555; }
+.p-btrack { flex: 1; height: 5px; background: var(--light); }
+.p-bfill { height: 5px; background: var(--black); }
+.p-bval { font-family: var(--mono); font-size: 9px; width: 40px; text-align: right; flex-shrink: 0; }
+.p-tabs { display: flex; margin-bottom: 10px; }
+.p-tb { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; padding: 4px 10px; border: 1px solid var(--border); background: transparent; color: var(--gray); cursor: pointer; margin-right: -1px; }
+.p-tb.active { background: var(--black); color: var(--white); border-color: var(--black); position: relative; }
+.p-panel { display: none; } .p-panel.active { display: block; }
+.p-pipe { display: flex; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.p-ps { font-family: var(--mono); font-size: 9px; padding: 4px 7px; border: 1px solid var(--border); color: #555; margin-right: -1px; }
+.p-ps.hi { border-color: var(--black); color: var(--black); position: relative; }
+.p-pa { font-family: var(--mono); font-size: 9px; padding: 0 4px; color: var(--border); }
+.p-divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+.p-foot { display: flex; justify-content: space-between; padding-top: 10px; border-top: 2px solid var(--black); }
+.p-foot span { font-family: var(--mono); font-size: 9px; color: var(--gray); }
+
+@media (max-width: 640px) {
+  .section-inner { padding: 60px 20px; }
+  .misc-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 8px; padding: 16px 20px; }
+  .nav-links li a { padding: 0 12px; font-size: 9px; letter-spacing: 1px; }
+  .p-cols, .p-grid2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#about" class="nav-name">Victor Gertner</a>
+  <ul class="nav-links">
+    <li><a href="#about" data-section="about">About</a></li>
+    <li><a href="#publications" data-section="publications">Publications</a></li>
+    <li><a href="#misc" data-section="misc">Misc</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="section-inner">
+      <hr class="about-rule">
+      <h1>Victor Gertner</h1>
+      <div class="position">PhD Student &nbsp;·&nbsp; CBIO Lab, Mines Paris PSL &nbsp;·&nbsp; Supervised by Vincent Mallet &amp; Frédéric Cazals</div>
+      <p class="bio">
+        Your bio goes here.
+      </p>
+      <div class="contact-row">
+        <a href="mailto:victor.gertner@minesparis.psl.eu" class="contact-link">Email</a>
+        <a href="https://github.com/VictorGtn" class="contact-link" target="_blank">GitHub</a>
+        <a href="https://scholar.google.com" class="contact-link" target="_blank">Scholar</a>
+        <a href="/cv.pdf" class="contact-link">CV ↓</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PUBLICATIONS -->
+  <section class="section" id="publications">
+    <div class="section-inner">
+      <div class="label">Publications</div>
+
+      <div class="pub-item">
+        <div class="pub-year">2026</div>
+        <div class="pub-body">
+          <div class="pub-title">AlphaSurf: On-the-Fly Surface Computations for Protein Representation Learning</div>
+          <div class="pub-venue">LMRL Workshop @ ICLR 2026</div>
+          <div class="pub-authors">V. Gertner, F. Cazals, V. Mallet</div>
+          <div class="pub-tags">
+            <button class="pub-tag hi" onclick="openPoster()">Poster</button>
+            <a href="#" class="pub-tag">PDF</a>
+            <a href="https://github.com/VictorGtn/AlphaSurf" class="pub-tag" target="_blank">Code</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copy this block for each new paper -->
+      <!--
+      <div class="pub-item">
+        <div class="pub-year">20XX</div>
+        <div class="pub-body">
+          <div class="pub-title">Paper title</div>
+          <div class="pub-venue">Venue</div>
+          <div class="pub-authors">Authors</div>
+          <div class="pub-tags">
+            <a href="#" class="pub-tag">PDF</a>
+          </div>
+        </div>
+      </div>
+      -->
+
+    </div>
+  </section>
+
+  <!-- MISC -->
+  <section class="section" id="misc">
+    <div class="section-inner">
+      <div class="label">Misc</div>
+      <div class="misc-grid">
+        <div class="misc-cell">
+          <div class="misc-cell-label">Teaching</div>
+          <ul>
+            <li>Course name, role, year</li>
+            <li>Course name, role, year</li>
+          </ul>
+        </div>
+        <div class="misc-cell">
+          <div class="misc-cell-label">Reviewing</div>
+          <ul>
+            <li>Conference or journal</li>
+            <li>Conference or journal</li>
+          </ul>
+        </div>
+        <div class="misc-cell">
+          <div class="misc-cell-label">Talks</div>
+          <ul>
+            <li>Talk title, venue, year</li>
+            <li>Poster, conference, year</li>
+          </ul>
+        </div>
+        <div class="misc-cell">
+          <div class="misc-cell-label">Other</div>
+          <p>Open source work, collaborations, interests, anything else.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Victor Gertner &nbsp;·&nbsp; Mines Paris PSL</span>
+  <span>Last updated 2026</span>
+</footer>
+
+<!-- POSTER MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Poster &nbsp;·&nbsp; LMRL @ ICLR 2026</span>
+      <button class="modal-close" onclick="closeModal()">Close ✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="poster">
+        <hr class="p-rule">
+        <div class="p-h1">AlphaSurf</div>
+        <div class="p-meta">ON-THE-FLY SURFACE COMPUTATIONS FOR PROTEIN REPRESENTATION LEARNING &nbsp;·&nbsp; LMRL @ ICLR 2026 &nbsp;·&nbsp; Gertner · Cazals · Mallet</div>
+        <div class="p-cols">
+          <div class="p-col"><div class="p-lbl">Problem</div><p class="p-p">Surface-based protein ML achieves state-of-the-art results, but MSMS-derived surfaces are expensive to compute and produce oversized meshes — a bottleneck for adoption.</p></div>
+          <div class="p-col"><div class="p-lbl">Insight</div><p class="p-p">The α-complex encodes the solvent-accessible surface directly from atom geometry. No separate triangulation pipeline required. Complexity O(n log n).</p><div class="p-formula">Δ ∈ Kα ⟺ ∩ Rj,α ≠ ∅</div></div>
+          <div class="p-col"><div class="p-lbl">Result</div><p class="p-p">AlphaSurf replaces MSMS with α-complex meshes on-the-fly. Matches accuracy. Cuts preprocessing 5× with 14× fewer vertices.</p></div>
+        </div>
+        <div class="p-stats">
+          <div class="p-stat"><span class="p-bignum">29×</span><span class="p-biglbl">speedup vs MSMS</span></div>
+          <div class="p-stat"><span class="p-bignum">86.1%</span><span class="p-biglbl">balanced accuracy</span></div>
+          <div class="p-stat"><span class="p-bignum">5.3×</span><span class="p-biglbl">preprocessing reduction</span></div>
+          <div class="p-stat"><span class="p-bignum">96ms</span><span class="p-biglbl">preprocessing (8 workers)</span></div>
+        </div>
+        <div class="p-grid2">
+          <div class="p-cell">
+            <div class="p-lbl">Pipeline</div>
+            <div class="p-tabs">
+              <button class="p-tb active" onclick="pswitch('a',this)">AtomSurf</button>
+              <button class="p-tb" onclick="pswitch('b',this)">AlphaSurf</button>
+            </div>
+            <div id="ppa" class="p-panel active">
+              <div class="p-pipe"><span class="p-ps">Atoms</span><span class="p-pa">→</span><span class="p-ps hi">MSMS mesh</span><span class="p-pa">→</span><span class="p-ps hi">Coarsen</span><span class="p-pa">→</span><span class="p-ps">Features</span><span class="p-pa">→</span><span class="p-ps">Output</span></div>
+              <p class="p-p">1356 ± 826 ms &nbsp;·&nbsp; 36K vertices &nbsp;·&nbsp; sliver triangles present</p>
+            </div>
+            <div id="ppb" class="p-panel">
+              <div class="p-pipe"><span class="p-ps">Atoms</span><span class="p-pa">→</span><span class="p-ps hi">α-complex</span><span class="p-pa">→</span><span class="p-ps hi">Direct mesh</span><span class="p-pa">→</span><span class="p-ps">Features</span><span class="p-pa">→</span><span class="p-ps">Output</span></div>
+              <p class="p-p">47 ± 31 ms &nbsp;·&nbsp; 2456 vertices &nbsp;·&nbsp; no sliver triangles</p>
+            </div>
+            <hr class="p-divider">
+            <div class="p-lbl">Preprocessing (8 workers)</div>
+            <div style="margin-top:8px">
+              <div class="p-brow"><span class="p-blbl">AtomSurf</span><div class="p-btrack"><div class="p-bfill" style="width:100%"></div></div><span class="p-bval">540ms</span></div>
+              <div class="p-brow"><span class="p-blbl">AlphaSurf α=0</span><div class="p-btrack"><div class="p-bfill" style="width:17.8%"></div></div><span class="p-bval">96ms</span></div>
+              <div class="p-brow"><span class="p-blbl">AlphaSurf α=5</span><div class="p-btrack"><div class="p-bfill" style="width:11.1%"></div></div><span class="p-bval">60ms</span></div>
+              <div class="p-brow"><span class="p-blbl">dMaSIF</span><div class="p-btrack"><div class="p-bfill" style="width:21.5%"></div></div><span class="p-bval">116ms</span></div>
+            </div>
+          </div>
+          <div class="p-cell">
+            <div class="p-lbl">Performance — MaSIF-Ligand</div>
+            <table class="p-table">
+              <thead><tr><th>Method</th><th>Bal. Acc</th><th>Preproc</th></tr></thead>
+              <tbody>
+                <tr><td>AtomSurf</td><td>83.0 ± 3.0</td><td>540ms</td></tr>
+                <tr class="hl"><td>AlphaSurf α=0</td><td>84.1 ± 2.6</td><td>96ms</td></tr>
+                <tr><td>AlphaSurf α=5</td><td>81.7 ± 0.5</td><td>60ms</td></tr>
+                <tr><td>dMaSIF</td><td>78.3 ± 1.5</td><td>116ms</td></tr>
+              </tbody>
+            </table>
+            <hr class="p-divider">
+            <div class="p-lbl">Simplex → SAS boundary</div>
+            <table class="p-table">
+              <thead><tr><th>Type</th><th>Contributes</th></tr></thead>
+              <tbody>
+                <tr><td>singular edge</td><td>full circle arc</td></tr>
+                <tr><td>singular triangle</td><td>two intersection pts</td></tr>
+                <tr><td>regular vertex</td><td>spherical cap(s)</td></tr>
+                <tr><td>regular edge</td><td>circle arc(s)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="p-foot">
+          <span>victor.gertner@minesparis.psl.eu</span>
+          <span>github.com/VictorGtn/AlphaSurf</span>
+          <span>Mines Paris · Institut Curie · Inria</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav-links a[data-section]');
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const l = document.querySelector(`.nav-links a[data-section="${e.target.id}"]`);
+      if (l) l.classList.add('active');
+    }
+  });
+}, { threshold: 0.4 });
+
+sections.forEach(s => io.observe(s));
+
+function openPoster() {
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function pswitch(id, btn) {
+  document.querySelectorAll('.p-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.p-tb').forEach(b => b.classList.remove('active'));
+  document.getElementById('pp' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+
+</body>
+</html>
