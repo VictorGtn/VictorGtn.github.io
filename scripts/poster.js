@@ -90,6 +90,59 @@ function buildIntersectionComplex(points, alpha) {
   const edges = [];
   const edgeSet = new Set();
 
+  function hasTripleIntersection(a, b, c) {
+    const minX = Math.max(a.x - a.R, b.x - b.R, c.x - c.R);
+    const maxX = Math.min(a.x + a.R, b.x + b.R, c.x + c.R);
+    const minY = Math.max(a.y - a.R, b.y - b.R, c.y - c.R);
+    const maxY = Math.min(a.y + a.R, b.y + b.R, c.y + c.R);
+    if (minX > maxX || minY > maxY) return false;
+
+    const residual = (x, y) => Math.max(
+      (x - a.x) * (x - a.x) + (y - a.y) * (y - a.y) - a.R * a.R,
+      (x - b.x) * (x - b.x) + (y - b.y) * (y - b.y) - b.R * b.R,
+      (x - c.x) * (x - c.x) + (y - c.y) * (y - c.y) - c.R * c.R
+    );
+
+    const samples = 14;
+    let bestX = (minX + maxX) * 0.5;
+    let bestY = (minY + maxY) * 0.5;
+    let best = residual(bestX, bestY);
+
+    for (let ix = 0; ix <= samples; ix += 1) {
+      for (let iy = 0; iy <= samples; iy += 1) {
+        const x = minX + (ix / samples) * (maxX - minX);
+        const y = minY + (iy / samples) * (maxY - minY);
+        const r = residual(x, y);
+        if (r < best) {
+          best = r;
+          bestX = x;
+          bestY = y;
+        }
+      }
+    }
+
+    let step = Math.max(maxX - minX, maxY - minY) * 0.25;
+    for (let it = 0; it < 18 && step > 1e-3; it += 1) {
+      let improved = false;
+      for (let dx = -1; dx <= 1; dx += 1) {
+        for (let dy = -1; dy <= 1; dy += 1) {
+          const x = Math.min(maxX, Math.max(minX, bestX + dx * step));
+          const y = Math.min(maxY, Math.max(minY, bestY + dy * step));
+          const r = residual(x, y);
+          if (r < best) {
+            best = r;
+            bestX = x;
+            bestY = y;
+            improved = true;
+          }
+        }
+      }
+      if (!improved) step *= 0.5;
+    }
+
+    return best <= 1e-3;
+  }
+
   for (let i = 0; i < balls.length; i += 1) {
     for (let j = i + 1; j < balls.length; j += 1) {
       if (distance(balls[i], balls[j]) <= balls[i].R + balls[j].R) {
@@ -106,7 +159,9 @@ function buildIntersectionComplex(points, alpha) {
         const ij = edgeSet.has(`${i}-${j}`);
         const ik = edgeSet.has(`${i}-${k}`);
         const jk = edgeSet.has(`${j}-${k}`);
-        if (ij && ik && jk) triangles.push([i, j, k]);
+        if (ij && ik && jk && hasTripleIntersection(balls[i], balls[j], balls[k])) {
+          triangles.push([i, j, k]);
+        }
       }
     }
   }
