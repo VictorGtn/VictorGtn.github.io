@@ -151,21 +151,24 @@ function initMeshViewer() {
   const summary = document.getElementById('meshSummary');
   const meshTabs = Array.from(document.querySelectorAll('.p-tb[data-mesh]'));
   if (!canvas || !summary || meshTabs.length === 0) return;
-  if (!window.THREE || !THREE.PLYLoader) {
+  if (!window.THREE) {
     summary.textContent = '3D viewer unavailable in this browser session.';
     return;
   }
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 100);
-  const lightA = new THREE.AmbientLight(0xffffff, 0.7);
-  const lightB = new THREE.DirectionalLight(0xffffff, 0.55);
-  lightB.position.set(0.8, 1, 0.9);
-  scene.add(lightA, lightB);
+  const lightA = new THREE.AmbientLight(0xffffff, 0.9);
+  const lightB = new THREE.DirectionalLight(0xffffff, 0.9);
+  const lightC = new THREE.DirectionalLight(0xffffff, 0.45);
+  lightB.position.set(1.1, 1.3, 1.4);
+  lightC.position.set(-1.0, -0.7, 0.6);
+  scene.add(lightA, lightB, lightC);
   camera.position.set(0, 0, 2.5);
 
-  const loader = new THREE.PLYLoader();
   const root = new THREE.Group();
   scene.add(root);
 
@@ -174,8 +177,54 @@ function initMeshViewer() {
     alpha0: 'assets/meshes/1A27_AB_alpha0.ply'
   };
 
-  let currentMesh = null;
+  let currentMeshObject = null;
   let currentKey = 'msms';
+
+  function parseAsciiPly(plyText) {
+    const lines = plyText.split(/\r?\n/);
+    let i = 0;
+    let vertexCount = 0;
+    let faceCount = 0;
+
+    for (; i < lines.length; i += 1) {
+      const line = lines[i].trim();
+      if (line.startsWith('element vertex')) {
+        vertexCount = Number(line.split(/\s+/)[2]);
+      } else if (line.startsWith('element face')) {
+        faceCount = Number(line.split(/\s+/)[2]);
+      } else if (line === 'end_header') {
+        i += 1;
+        break;
+      }
+    }
+
+    const vertices = new Float32Array(vertexCount * 3);
+    const indexList = [];
+
+    for (let v = 0; v < vertexCount; v += 1, i += 1) {
+      const parts = lines[i].trim().split(/\s+/);
+      vertices[v * 3] = Number(parts[0]);
+      vertices[v * 3 + 1] = Number(parts[1]);
+      vertices[v * 3 + 2] = Number(parts[2]);
+    }
+
+    for (let f = 0; f < faceCount; f += 1, i += 1) {
+      const line = (lines[i] || '').trim();
+      if (!line) continue;
+      const parts = line.split(/\s+/).map(Number);
+      const n = parts[0];
+      if (!Number.isFinite(n) || n < 3 || parts.length < n + 1) continue;
+      const face = parts.slice(1, n + 1);
+      for (let k = 1; k < face.length - 1; k += 1) {
+        indexList.push(face[0], face[k], face[k + 1]);
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indexList);
+    return geometry;
+  }
 
   function resizeRenderer() {
     const w = canvas.clientWidth || 320;
@@ -200,6 +249,7 @@ function initMeshViewer() {
     const scale = maxSize > 0 ? 1.8 / maxSize : 1;
     geometry.translate(-center.x, -center.y, -center.z);
     geometry.scale(scale, scale, scale);
+    geometry.computeBoundingSphere();
     return geometry;
   }
 
@@ -208,34 +258,56 @@ function initMeshViewer() {
     if (!path) return;
     currentKey = key;
     setActiveMeshTab(key);
-    loader.load(
-      path,
-      geometry => {
+    fetch(path)
+      .then(resp => {
+        if (!resp.ok) throw new Error('Mesh fetch failed');
+        return resp.text();
+      })
+      .then(plyText => {
+        const geometry = parseAsciiPly(plyText);
         const normalized = normalizeGeometry(geometry);
         const material = new THREE.MeshStandardMaterial({
-          color: 0x141414,
-          roughness: 1,
+          color: 0xd4dae2,
+          roughness: 0.8,
           metalness: 0,
-          flatShading: true
+          flatShading: false,
+          side: THREE.DoubleSide
         });
         const mesh = new THREE.Mesh(normalized, material);
-        if (currentMesh) {
-          root.remove(currentMesh);
-          currentMesh.geometry.dispose();
-          currentMesh.material.dispose();
+        mesh.frustumCulled = false;
+
+        const wire = new THREE.WireframeGeometry(normalized);
+        const edgeLines = new THREE.LineSegments(
+          wire,
+          new THREE.LineBasicMaterial({
+            color: 0x1a1a1b,
+            transparent: true,
+            opacity: 0.22
+          })
+        );
+        edgeLines.frustumCulled = false;
+
+        const meshObject = new THREE.Group();
+        meshObject.add(mesh);
+        meshObject.add(edgeLines);
+
+        if (currentMeshObject) {
+          root.remove(currentMeshObject);
+          currentMeshObject.traverse(node => {
+            if (node.geometry) node.geometry.dispose();
+            if (node.material) node.material.dispose();
+          });
         }
-        currentMesh = mesh;
-        root.add(mesh);
+        currentMeshObject = meshObject;
+        root.add(meshObject);
 
         const vertCount = normalized.getAttribute('position').count;
         const faceCount = normalized.index ? normalized.index.count / 3 : vertCount / 3;
         summary.textContent = `${key === 'msms' ? 'MSMS' : 'Alpha α=0'} · ${vertCount} vertices · ${Math.round(faceCount)} faces`;
-      },
-      undefined,
-      () => {
+      })
+      .catch(() => {
         summary.textContent = 'Unable to load mesh file.';
-      }
-    );
+      });
   }
 
   meshTabs.forEach(btn => {
@@ -248,7 +320,7 @@ function initMeshViewer() {
 
   function frame() {
     requestAnimationFrame(frame);
-    if (currentMesh) currentMesh.rotation.y += 0.004;
+    if (currentMeshObject) currentMeshObject.rotation.y += 0.003;
     renderer.render(scene, camera);
   }
 
