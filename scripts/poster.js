@@ -128,7 +128,7 @@ function drawAlphaFigure(alpha) {
   }
 }
 
-document.querySelectorAll('.p-tb').forEach(tab => {
+document.querySelectorAll('.p-tb[data-panel]').forEach(tab => {
   tab.addEventListener('click', () => {
     setPosterPanel(tab.dataset.panel);
   });
@@ -145,3 +145,117 @@ if (alphaSlider && alphaValue) {
   alphaSlider.addEventListener('input', render);
   render();
 }
+
+function initMeshViewer() {
+  const canvas = document.getElementById('meshCanvas');
+  const summary = document.getElementById('meshSummary');
+  const meshTabs = Array.from(document.querySelectorAll('.p-tb[data-mesh]'));
+  if (!canvas || !summary || meshTabs.length === 0) return;
+  if (!window.THREE || !THREE.PLYLoader) {
+    summary.textContent = '3D viewer unavailable in this browser session.';
+    return;
+  }
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 100);
+  const lightA = new THREE.AmbientLight(0xffffff, 0.7);
+  const lightB = new THREE.DirectionalLight(0xffffff, 0.55);
+  lightB.position.set(0.8, 1, 0.9);
+  scene.add(lightA, lightB);
+  camera.position.set(0, 0, 2.5);
+
+  const loader = new THREE.PLYLoader();
+  const root = new THREE.Group();
+  scene.add(root);
+
+  const meshPaths = {
+    msms: 'assets/meshes/1A27_AB_msms.ply',
+    alpha0: 'assets/meshes/1A27_AB_alpha0.ply'
+  };
+
+  let currentMesh = null;
+  let currentKey = 'msms';
+
+  function resizeRenderer() {
+    const w = canvas.clientWidth || 320;
+    const h = canvas.clientHeight || 210;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  function setActiveMeshTab(key) {
+    meshTabs.forEach(btn => btn.classList.toggle('active', btn.dataset.mesh === key));
+  }
+
+  function normalizeGeometry(geometry) {
+    geometry.computeVertexNormals();
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxSize = Math.max(size.x, size.y, size.z);
+    const scale = maxSize > 0 ? 1.8 / maxSize : 1;
+    geometry.translate(-center.x, -center.y, -center.z);
+    geometry.scale(scale, scale, scale);
+    return geometry;
+  }
+
+  function loadMesh(key) {
+    const path = meshPaths[key];
+    if (!path) return;
+    currentKey = key;
+    setActiveMeshTab(key);
+    loader.load(
+      path,
+      geometry => {
+        const normalized = normalizeGeometry(geometry);
+        const material = new THREE.MeshStandardMaterial({
+          color: 0x141414,
+          roughness: 1,
+          metalness: 0,
+          flatShading: true
+        });
+        const mesh = new THREE.Mesh(normalized, material);
+        if (currentMesh) {
+          root.remove(currentMesh);
+          currentMesh.geometry.dispose();
+          currentMesh.material.dispose();
+        }
+        currentMesh = mesh;
+        root.add(mesh);
+
+        const vertCount = normalized.getAttribute('position').count;
+        const faceCount = normalized.index ? normalized.index.count / 3 : vertCount / 3;
+        summary.textContent = `${key === 'msms' ? 'MSMS' : 'Alpha α=0'} · ${vertCount} vertices · ${Math.round(faceCount)} faces`;
+      },
+      undefined,
+      () => {
+        summary.textContent = 'Unable to load mesh file.';
+      }
+    );
+  }
+
+  meshTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.mesh && btn.dataset.mesh !== currentKey) {
+        loadMesh(btn.dataset.mesh);
+      }
+    });
+  });
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (currentMesh) currentMesh.rotation.y += 0.004;
+    renderer.render(scene, camera);
+  }
+
+  resizeRenderer();
+  window.addEventListener('resize', resizeRenderer);
+  loadMesh('msms');
+  frame();
+}
+
+initMeshViewer();

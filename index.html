@@ -52,7 +52,7 @@
           <div class="pub-venue">LMRL Workshop @ ICLR 2026</div>
           <div class="pub-authors">V. Gertner, F. Cazals, V. Mallet</div>
           <div class="pub-tags">
-            <button class="pub-tag hi" id="openPosterBtn">Poster</button>
+            <button class="pub-tag" id="openPosterBtn">Poster</button>
             <a href="https://openreview.net/forum?id=rBjKl58v54" class="pub-tag" target="_blank">PDF</a>
             <a href="https://github.com/VictorGtn/AlphaSurf" class="pub-tag" target="_blank">Code</a>
           </div>
@@ -149,6 +149,16 @@
               <div class="p-brow"><span class="p-blbl">AlphaSurf α=5</span><div class="p-btrack"><div class="p-bfill" style="width:11.1%"></div></div><span class="p-bval">60ms</span></div>
               <div class="p-brow"><span class="p-blbl">dMaSIF</span><div class="p-btrack"><div class="p-bfill" style="width:21.5%"></div></div><span class="p-bval">116ms</span></div>
             </div>
+            <hr class="p-divider">
+            <div class="p-lbl">Surface viewer</div>
+            <div class="p-tabs p-mesh-tabs">
+              <button class="p-tb active" data-mesh="msms">MSMS</button>
+              <button class="p-tb" data-mesh="alpha0">Alpha α=0</button>
+            </div>
+            <div class="p-mesh-wrap">
+              <canvas id="meshCanvas" class="p-mesh-canvas"></canvas>
+            </div>
+            <p class="p-alpha-note" id="meshSummary"></p>
           </div>
           <div class="p-cell">
             <div class="p-lbl">Performance — MaSIF-Ligand</div>
@@ -185,6 +195,8 @@
 </div>
 
 <script src="scripts/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/PLYLoader.js"></script>
 <script src="scripts/poster.js"></script>
 
 </body>
