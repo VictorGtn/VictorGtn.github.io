@@ -78,6 +78,22 @@
   cursor: pointer;
 }
 .p-mesh-btn:hover { background: var(--black); color: var(--white); }
+.p-repro { margin-top: 8px; border: 1px solid var(--border); }
+.p-repro-summary {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #555;
+  cursor: pointer;
+  padding: 6px 8px;
+  list-style: none;
+}
+.p-repro-summary::-webkit-details-marker { display: none; }
+.p-repro-summary::before { content: '+ '; }
+.p-repro[open] .p-repro-summary::before { content: '- '; }
+.p-repro-body { border-top: 1px solid var(--border); padding: 8px; display: grid; gap: 4px; }
+.p-repro-body .p-p { margin: 0; }
 
 @media (max-width: 640px) {
   .p-cols, .p-grid2 { grid-template-columns: 1fr; }

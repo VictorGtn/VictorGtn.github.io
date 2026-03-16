@@ -156,7 +156,29 @@
               <div class="p-brow"><span class="p-blbl">AlphaSurf α=5</span><div class="p-btrack"><div class="p-bfill" style="width:11.1%"></div></div><span class="p-bval">60ms</span></div>
               <div class="p-brow"><span class="p-blbl">dMaSIF</span><div class="p-btrack"><div class="p-bfill" style="width:21.5%"></div></div><span class="p-bval">116ms</span></div>
             </div>
-            <hr class="p-divider">
+          </div>
+          <div class="p-cell">
+            <div class="p-lbl">Accuracy — MaSIF-Ligand</div>
+            <table class="p-table">
+              <thead><tr><th>Method</th><th>Bal. Acc</th></tr></thead>
+              <tbody>
+                <tr><td>AtomSurf</td><td>83.0 ± 3.0</td></tr>
+                <tr class="hl"><td>AlphaSurf α=0</td><td>84.1 ± 2.6</td></tr>
+                <tr><td>AlphaSurf α=5</td><td>81.7 ± 0.5</td></tr>
+                <tr><td>dMaSIF</td><td>78.3 ± 1.5</td></tr>
+              </tbody>
+            </table>
+            <details class="p-repro">
+              <summary class="p-repro-summary">Repro details</summary>
+              <div class="p-repro-body">
+                <p class="p-p"><strong>Dataset:</strong> MaSIF-Ligand (1,438 proteins, 7 classes).</p>
+                <p class="p-p"><strong>Hardware:</strong> standard GPU machine with 8 CPU workers for preprocessing; V100 GPU for model processing.</p>
+                <p class="p-p"><strong>Training setup:</strong> same architecture and learning protocol as AtomSurf baseline.</p>
+                <p class="p-p"><strong>Reporting:</strong> balanced accuracy across 3 seeds; preprocessing and processing times reported separately.</p>
+              </div>
+            </details>
+          </div>
+          <div class="p-cell">
             <div class="p-lbl">Surface viewer</div>
             <div class="p-tabs p-mesh-tabs" id="meshTabsRow">
               <button class="p-tb active" data-mesh="msms">MSMS</button>
@@ -187,17 +209,6 @@
             <p class="p-alpha-note" id="meshSummary"></p>
           </div>
           <div class="p-cell">
-            <div class="p-lbl">Performance — MaSIF-Ligand</div>
-            <table class="p-table">
-              <thead><tr><th>Method</th><th>Bal. Acc</th><th>Preproc</th></tr></thead>
-              <tbody>
-                <tr><td>AtomSurf</td><td>83.0 ± 3.0</td><td>540ms</td></tr>
-                <tr class="hl"><td>AlphaSurf α=0</td><td>84.1 ± 2.6</td><td>96ms</td></tr>
-                <tr><td>AlphaSurf α=5</td><td>81.7 ± 0.5</td><td>60ms</td></tr>
-                <tr><td>dMaSIF</td><td>78.3 ± 1.5</td><td>116ms</td></tr>
-              </tbody>
-            </table>
-            <hr class="p-divider">
             <div class="p-lbl">Simplex → SAS boundary</div>
             <div class="p-alpha-controls">
               <label class="p-alpha-label" for="alphaSlider">alpha</label>
