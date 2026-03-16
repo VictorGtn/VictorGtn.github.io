@@ -43,8 +43,24 @@
 .p-alpha-figure { width: 100%; height: auto; display: block; }
 .p-alpha-note { font-family: var(--mono); font-size: 9px; color: #555; line-height: 1.5; }
 .p-mesh-tabs { margin-bottom: 8px; }
-.p-mesh-wrap { border: 1px solid var(--black); background: transparent; margin-bottom: 8px; }
+.p-mesh-wrap { position: relative; border: 1px solid var(--black); background: transparent; margin-bottom: 8px; }
 .p-mesh-canvas { width: 100%; height: 210px; display: block; }
+.p-mesh-tabs .p-tb { min-width: 82px; text-align: center; }
+.p-mesh-controls { position: absolute; top: 6px; right: 6px; display: flex; z-index: 2; }
+.p-mesh-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  width: 24px;
+  height: 24px;
+  line-height: 22px;
+  text-align: center;
+  border: 1px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+  margin-left: -1px;
+  cursor: pointer;
+}
+.p-mesh-btn:hover { background: var(--black); color: var(--white); }
 
 @media (max-width: 640px) {
   .p-cols, .p-grid2 { grid-template-columns: 1fr; }

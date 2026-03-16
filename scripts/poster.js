@@ -150,6 +150,9 @@ function initMeshViewer() {
   const canvas = document.getElementById('meshCanvas');
   const summary = document.getElementById('meshSummary');
   const meshTabs = Array.from(document.querySelectorAll('.p-tb[data-mesh]'));
+  const zoomInBtn = document.getElementById('meshZoomInBtn');
+  const zoomOutBtn = document.getElementById('meshZoomOutBtn');
+  const playPauseBtn = document.getElementById('meshPlayPauseBtn');
   if (!canvas || !summary || meshTabs.length === 0) return;
   if (!window.THREE) {
     summary.textContent = '3D viewer unavailable in this browser session.';
@@ -179,6 +182,11 @@ function initMeshViewer() {
 
   let currentMeshObject = null;
   let currentKey = 'msms';
+  let rotationEnabled = true;
+  let rotationY = 0;
+  let currentRadius = 1;
+  let fitDistance = 2.5;
+  let zoomFactor = 1;
 
   function parseAsciiPly(plyText) {
     const lines = plyText.split(/\r?\n/);
@@ -244,13 +252,37 @@ function initMeshViewer() {
     geometry.computeBoundingBox();
     const box = geometry.boundingBox;
     const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxSize = Math.max(size.x, size.y, size.z);
-    const scale = maxSize > 0 ? 1.8 / maxSize : 1;
     geometry.translate(-center.x, -center.y, -center.z);
-    geometry.scale(scale, scale, scale);
     geometry.computeBoundingSphere();
     return geometry;
+  }
+
+  function fitCameraToGeometry(geometry) {
+    geometry.computeBoundingSphere();
+    const sphere = geometry.boundingSphere;
+    if (!sphere || !Number.isFinite(sphere.radius) || sphere.radius <= 0) return;
+
+    currentRadius = sphere.radius;
+    const vFov = THREE.MathUtils.degToRad(camera.fov);
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+    const fitDistanceV = currentRadius / Math.sin(vFov / 2);
+    const fitDistanceH = currentRadius / Math.sin(hFov / 2);
+    fitDistance = 1.18 * Math.max(fitDistanceV, fitDistanceH);
+    const distance = fitDistance * zoomFactor;
+
+    camera.position.set(0, 0, distance);
+    camera.near = Math.max(0.01, distance - currentRadius * 3.2);
+    camera.far = distance + currentRadius * 3.2;
+    camera.updateProjectionMatrix();
+  }
+
+  function applyZoom(nextZoomFactor) {
+    zoomFactor = Math.min(2.8, Math.max(0.55, nextZoomFactor));
+    const distance = fitDistance * zoomFactor;
+    camera.position.set(0, 0, distance);
+    camera.near = Math.max(0.01, distance - currentRadius * 3.2);
+    camera.far = distance + currentRadius * 3.2;
+    camera.updateProjectionMatrix();
   }
 
   function loadMesh(key) {
@@ -266,6 +298,8 @@ function initMeshViewer() {
       .then(plyText => {
         const geometry = parseAsciiPly(plyText);
         const normalized = normalizeGeometry(geometry);
+        fitCameraToGeometry(normalized);
+        applyZoom(zoomFactor);
         const material = new THREE.MeshStandardMaterial({
           color: 0xd4dae2,
           roughness: 0.8,
@@ -292,6 +326,7 @@ function initMeshViewer() {
         meshObject.add(edgeLines);
 
         if (currentMeshObject) {
+          rotationY = currentMeshObject.rotation.y;
           root.remove(currentMeshObject);
           currentMeshObject.traverse(node => {
             if (node.geometry) node.geometry.dispose();
@@ -299,6 +334,7 @@ function initMeshViewer() {
           });
         }
         currentMeshObject = meshObject;
+        currentMeshObject.rotation.y = rotationY;
         root.add(meshObject);
 
         const vertCount = normalized.getAttribute('position').count;
@@ -318,9 +354,25 @@ function initMeshViewer() {
     });
   });
 
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => applyZoom(zoomFactor * 0.88));
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => applyZoom(zoomFactor * 1.14));
+  }
+  if (playPauseBtn) {
+    playPauseBtn.addEventListener('click', () => {
+      rotationEnabled = !rotationEnabled;
+      playPauseBtn.textContent = rotationEnabled ? '||' : '>';
+    });
+  }
+
   function frame() {
     requestAnimationFrame(frame);
-    if (currentMeshObject) currentMeshObject.rotation.y += 0.003;
+    if (currentMeshObject) {
+      if (rotationEnabled) rotationY += 0.003;
+      currentMeshObject.rotation.y = rotationY;
+    }
     renderer.render(scene, camera);
   }
 
