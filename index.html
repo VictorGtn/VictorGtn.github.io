@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Victor Gertner</title>
+<meta name="description" content="Victor Gertner - PhD student at CBIO/Mines PSL working on geometric deep learning for proteins.">
+<link rel="canonical" href="https://victorgtn.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Victor Gertner">
+<meta property="og:description" content="PhD student at CBIO/Mines PSL in geometric deep learning applied to proteins.">
+<meta property="og:url" content="https://victorgtn.github.io/">
+<meta property="og:site_name" content="Victor Gertner">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/base.css">
@@ -27,15 +34,15 @@
     <div class="section-inner">
       <hr class="about-rule">
       <h1>Victor Gertner</h1>
-      <div class="position">PhD Student &nbsp;·&nbsp; CBIO Lab, Mines Paris PSL &nbsp;·&nbsp; Supervised by Vincent Mallet &amp; Frédéric Cazals</div>
+      <div class="position">PhD Student &nbsp;·&nbsp; CBIO Lab, Mines Paris PSL &nbsp;·&nbsp; Supervised by <a href="https://vincentx15.github.io/" target="_blank" rel="noopener noreferrer" class="supervisor-link">Vincent Mallet</a> &amp; <a href="https://team.inria.fr/abs/team-members/homepage-frederic-cazals/" target="_blank" rel="noopener noreferrer" class="supervisor-link">Frédéric Cazals</a></div>
       <p class="bio">
         PhD student at CBIO/Mines PSL in Geometric Deep Learning Applied To Proteins.
       </p>
       <div class="contact-row">
         <a href="mailto:victor.gertner@minesparis.psl.eu" class="contact-link">Email</a>
-        <a href="https://github.com/VictorGtn" class="contact-link" target="_blank">GitHub</a>
-        <a href="https://scholar.google.com" class="contact-link" target="_blank">Scholar</a>
-        <a href="/cv.pdf" class="contact-link">CV ↓</a>
+        <a href="https://github.com/VictorGtn" class="contact-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://scholar.google.com" class="contact-link" target="_blank" rel="noopener noreferrer">Scholar</a>
+        <a href="cv.pdf" class="contact-link">CV ↓</a>
       </div>
     </div>
   </section>
@@ -53,8 +60,8 @@
           <div class="pub-authors">V. Gertner, F. Cazals, V. Mallet</div>
           <div class="pub-tags">
             <button class="pub-tag" id="openPosterBtn">Poster</button>
-            <a href="https://openreview.net/forum?id=rBjKl58v54" class="pub-tag" target="_blank">PDF</a>
-            <a href="https://github.com/VictorGtn/AlphaSurf" class="pub-tag" target="_blank">Code</a>
+            <a href="https://openreview.net/forum?id=rBjKl58v54" class="pub-tag" target="_blank" rel="noopener noreferrer">PDF</a>
+            <a href="https://github.com/VictorGtn/AlphaSurf" class="pub-tag" target="_blank" rel="noopener noreferrer">Code</a>
           </div>
         </div>
       </div>
@@ -100,7 +107,7 @@
 
 <footer>
   <span>Victor Gertner &nbsp;·&nbsp; Mines Paris PSL</span>
-  <span>Last updated 2026</span>
+  <span id="lastUpdated">Last updated</span>
 </footer>
 
 <!-- POSTER MODAL -->
@@ -151,18 +158,32 @@
             </div>
             <hr class="p-divider">
             <div class="p-lbl">Surface viewer</div>
-            <div class="p-tabs p-mesh-tabs">
+            <div class="p-tabs p-mesh-tabs" id="meshTabsRow">
               <button class="p-tb active" data-mesh="msms">MSMS</button>
               <button class="p-tb" data-mesh="alpha0">Alpha α=0</button>
             </div>
             <div class="p-mesh-wrap">
-              <canvas id="meshCanvas" class="p-mesh-canvas"></canvas>
+              <div id="meshSingleView" class="p-mesh-single">
+                <canvas id="meshCanvas" class="p-mesh-canvas"></canvas>
+              </div>
+              <div id="meshSplitView" class="p-mesh-split" hidden>
+                <div class="p-mesh-panel">
+                  <span class="p-mesh-panel-label">MSMS</span>
+                  <canvas id="meshCanvasMsms" class="p-mesh-canvas"></canvas>
+                </div>
+                <div class="p-mesh-panel">
+                  <span class="p-mesh-panel-label">Alpha α=0</span>
+                  <canvas id="meshCanvasAlpha" class="p-mesh-canvas"></canvas>
+                </div>
+              </div>
               <div class="p-mesh-controls">
-                <button class="p-mesh-btn" id="meshZoomInBtn">+</button>
-                <button class="p-mesh-btn" id="meshZoomOutBtn">-</button>
-                <button class="p-mesh-btn" id="meshPlayPauseBtn">||</button>
+                <button class="p-mesh-btn" id="meshZoomInBtn" aria-label="Zoom in">+</button>
+                <button class="p-mesh-btn" id="meshZoomOutBtn" aria-label="Zoom out">-</button>
+                <button class="p-mesh-btn" id="meshPlayPauseBtn" aria-label="Pause rotation">||</button>
+                <button class="p-mesh-btn" id="meshSplitBtn" aria-label="Enable split-screen mode">2x</button>
               </div>
             </div>
+            <p class="p-alpha-note">Data: 1A27_AB</p>
             <p class="p-alpha-note" id="meshSummary"></p>
           </div>
           <div class="p-cell">
@@ -200,7 +221,6 @@
 </div>
 
 <script src="scripts/main.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="scripts/poster.js"></script>
 
 </body>

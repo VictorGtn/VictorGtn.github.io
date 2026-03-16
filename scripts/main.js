@@ -1,5 +1,6 @@
 const sections = document.querySelectorAll('.section');
 const navLinks = document.querySelectorAll('.nav-links a[data-section]');
+let threeLoadPromise = null;
 
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -13,9 +14,29 @@ const io = new IntersectionObserver(entries => {
 
 sections.forEach(s => io.observe(s));
 
+function ensureThreeLoaded() {
+  if (window.THREE) return Promise.resolve();
+  if (threeLoadPromise) return threeLoadPromise;
+  threeLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Three.js'));
+    document.head.appendChild(script);
+  });
+  return threeLoadPromise;
+}
+
 function openPoster() {
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  ensureThreeLoaded()
+    .then(() => {
+      if (window.initMeshViewerOnce) window.initMeshViewerOnce();
+    })
+    .catch(() => {
+      if (window.initMeshViewerOnce) window.initMeshViewerOnce();
+    });
 }
 
 function closeModal() {
@@ -40,3 +61,14 @@ document.getElementById('modal').addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
+
+const lastUpdated = document.getElementById('lastUpdated');
+if (lastUpdated) {
+  const now = new Date();
+  const dateText = now.toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+  lastUpdated.textContent = `Last updated ${dateText}`;
+}
