@@ -1,15 +1,19 @@
 function setPosterPanel(id) {
-  document.querySelectorAll('.p-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.p-tb').forEach(b => b.classList.remove('active'));
+  document
+    .querySelectorAll(".p-panel")
+    .forEach((p) => p.classList.remove("active"));
+  document
+    .querySelectorAll(".p-tb")
+    .forEach((b) => b.classList.remove("active"));
 
-  const panel = document.getElementById('pp' + id);
+  const panel = document.getElementById("pp" + id);
   const tab = document.querySelector(`.p-tb[data-panel="${id}"]`);
-  if (panel) panel.classList.add('active');
-  if (tab) tab.classList.add('active');
+  if (panel) panel.classList.add("active");
+  if (tab) tab.classList.add("active");
 }
 
 function svgEl(tag, attrs) {
-  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
   Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
   return el;
 }
@@ -24,14 +28,14 @@ const alphaFigureState = {
   initialized: false,
   dragIndex: -1,
   points: [
-    { x: 82, y: 220, r: 46, label: 'x5' },
-    { x: 130, y: 130, r: 56, label: 'x4' },
-    { x: 225, y: 170, r: 62, label: 'x0' },
-    { x: 292, y: 85, r: 48, label: 'x3' },
-    { x: 336, y: 135, r: 34, label: 'x2' },
-    { x: 338, y: 232, r: 28, label: 'x1' }
+    { x: 82, y: 220, r: 46, label: "x5" },
+    { x: 130, y: 130, r: 56, label: "x4" },
+    { x: 225, y: 170, r: 62, label: "x0" },
+    { x: 292, y: 85, r: 48, label: "x3" },
+    { x: 336, y: 135, r: 34, label: "x2" },
+    { x: 338, y: 232, r: 28, label: "x1" },
   ],
-  bounds: { minX: 25, maxX: 435, minY: 28, maxY: 262 }
+  bounds: { minX: 25, maxX: 435, minY: 28, maxY: 262 },
 };
 
 function clipPolygonHalfPlane(poly, a, b, c) {
@@ -65,7 +69,7 @@ function buildPowerCell(i, balls, bounds) {
     { x: bounds.minX, y: bounds.minY },
     { x: bounds.maxX, y: bounds.minY },
     { x: bounds.maxX, y: bounds.maxY },
-    { x: bounds.minX, y: bounds.maxY }
+    { x: bounds.minX, y: bounds.maxY },
   ];
 
   const bi = balls[i];
@@ -77,7 +81,7 @@ function buildPowerCell(i, balls, bounds) {
     const wj = bj.R * bj.R;
     const a = 2 * (bj.x - bi.x);
     const b = 2 * (bj.y - bi.y);
-    const c = (bj.x * bj.x + bj.y * bj.y - wj) - (bi.x * bi.x + bi.y * bi.y - wi);
+    const c = bj.x * bj.x + bj.y * bj.y - wj - (bi.x * bi.x + bi.y * bi.y - wi);
     poly = clipPolygonHalfPlane(poly, a, b, c);
     if (poly.length === 0) break;
   }
@@ -86,7 +90,7 @@ function buildPowerCell(i, balls, bounds) {
 }
 
 function buildIntersectionComplex(points, alpha) {
-  const balls = points.map(p => ({ ...p, R: p.r + alpha * 1.6 }));
+  const balls = points.map((p) => ({ ...p, R: p.r + alpha * 1.6 }));
   const edges = [];
   const edgeSet = new Set();
 
@@ -97,11 +101,12 @@ function buildIntersectionComplex(points, alpha) {
     const maxY = Math.min(a.y + a.R, b.y + b.R, c.y + c.R);
     if (minX > maxX || minY > maxY) return false;
 
-    const residual = (x, y) => Math.max(
-      (x - a.x) * (x - a.x) + (y - a.y) * (y - a.y) - a.R * a.R,
-      (x - b.x) * (x - b.x) + (y - b.y) * (y - b.y) - b.R * b.R,
-      (x - c.x) * (x - c.x) + (y - c.y) * (y - c.y) - c.R * c.R
-    );
+    const residual = (x, y) =>
+      Math.max(
+        (x - a.x) * (x - a.x) + (y - a.y) * (y - a.y) - a.R * a.R,
+        (x - b.x) * (x - b.x) + (y - b.y) * (y - b.y) - b.R * b.R,
+        (x - c.x) * (x - c.x) + (y - c.y) * (y - c.y) - c.R * c.R,
+      );
 
     const samples = 14;
     let bestX = (minX + maxX) * 0.5;
@@ -159,7 +164,12 @@ function buildIntersectionComplex(points, alpha) {
         const ij = edgeSet.has(`${i}-${j}`);
         const ik = edgeSet.has(`${i}-${k}`);
         const jk = edgeSet.has(`${j}-${k}`);
-        if (ij && ik && jk && hasTripleIntersection(balls[i], balls[j], balls[k])) {
+        if (
+          ij &&
+          ik &&
+          jk &&
+          hasTripleIntersection(balls[i], balls[j], balls[k])
+        ) {
           triangles.push([i, j, k]);
         }
       }
@@ -170,96 +180,121 @@ function buildIntersectionComplex(points, alpha) {
 }
 
 function drawAlphaFigure(alpha) {
-  const svg = document.getElementById('alphaSvg');
+  const svg = document.getElementById("alphaSvg");
   if (!svg) return;
-  svg.textContent = '';
+  svg.textContent = "";
   const points = alphaFigureState.points;
   const { balls, edges, triangles } = buildIntersectionComplex(points, alpha);
 
   balls.forEach((_, i) => {
     const cell = buildPowerCell(i, balls, alphaFigureState.bounds);
     if (cell.length < 3) return;
-    svg.appendChild(svgEl('polygon', {
-      points: cell.map(p => `${p.x},${p.y}`).join(' '),
-      fill: 'rgba(51, 160, 255, 0.07)',
-      stroke: 'rgba(30, 110, 170, 0.35)',
-      'stroke-width': 0.8
-    }));
+    svg.appendChild(
+      svgEl("polygon", {
+        points: cell.map((p) => `${p.x},${p.y}`).join(" "),
+        fill: "rgba(51, 160, 255, 0.07)",
+        stroke: "rgba(30, 110, 170, 0.35)",
+        "stroke-width": 0.8,
+      }),
+    );
   });
 
-  points.forEach(p => {
-    svg.appendChild(svgEl('circle', {
-      cx: p.x, cy: p.y, r: p.r,
-      fill: 'rgba(245,245,240,0.9)',
-      stroke: '#0a0a0a', 'stroke-width': 1
-    }));
+  points.forEach((p) => {
+    svg.appendChild(
+      svgEl("circle", {
+        cx: p.x,
+        cy: p.y,
+        r: p.r,
+        fill: "rgba(245,245,240,0.9)",
+        stroke: "#0a0a0a",
+        "stroke-width": 1,
+      }),
+    );
   });
 
-  balls.forEach(p => {
-    svg.appendChild(svgEl('circle', {
-      cx: p.x, cy: p.y, r: p.R,
-      fill: 'none',
-      stroke: '#c33',
-      'stroke-width': 1,
-      'stroke-dasharray': '6 4'
-    }));
+  balls.forEach((p) => {
+    svg.appendChild(
+      svgEl("circle", {
+        cx: p.x,
+        cy: p.y,
+        r: p.R,
+        fill: "none",
+        stroke: "#c33",
+        "stroke-width": 1,
+        "stroke-dasharray": "6 4",
+      }),
+    );
   });
 
   triangles.forEach(([a, b, c]) => {
-    svg.appendChild(svgEl('polygon', {
-      points: `${points[a].x},${points[a].y} ${points[b].x},${points[b].y} ${points[c].x},${points[c].y}`,
-      fill: 'rgba(47,73,255,0.08)',
-      stroke: 'none'
-    }));
+    svg.appendChild(
+      svgEl("polygon", {
+        points: `${points[a].x},${points[a].y} ${points[b].x},${points[b].y} ${points[c].x},${points[c].y}`,
+        fill: "rgba(47,73,255,0.08)",
+        stroke: "none",
+      }),
+    );
   });
 
   edges.forEach(([a, b]) => {
-    svg.appendChild(svgEl('line', {
-      x1: points[a].x, y1: points[a].y,
-      x2: points[b].x, y2: points[b].y,
-      stroke: '#2f49ff',
-      'stroke-width': 1.4
-    }));
+    svg.appendChild(
+      svgEl("line", {
+        x1: points[a].x,
+        y1: points[a].y,
+        x2: points[b].x,
+        y2: points[b].y,
+        stroke: "#2f49ff",
+        "stroke-width": 1.4,
+      }),
+    );
   });
 
-  points.forEach(p => {
-    svg.appendChild(svgEl('circle', {
-      cx: p.x, cy: p.y, r: 3.2, fill: '#0a0a0a'
-    }));
-    const t = svgEl('text', {
-      x: p.x + 6, y: p.y - 8,
-      fill: '#0a0a0a',
-      'font-size': 10,
-      'font-family': 'IBM Plex Mono, monospace'
+  points.forEach((p) => {
+    svg.appendChild(
+      svgEl("circle", {
+        cx: p.x,
+        cy: p.y,
+        r: 3.2,
+        fill: "#0a0a0a",
+      }),
+    );
+    const t = svgEl("text", {
+      x: p.x + 6,
+      y: p.y - 8,
+      fill: "#0a0a0a",
+      "font-size": 10,
+      "font-family": "IBM Plex Mono, monospace",
     });
     t.textContent = p.label;
     svg.appendChild(t);
   });
 
   points.forEach((p, idx) => {
-    const handle = svgEl('circle', {
+    const handle = svgEl("circle", {
       cx: p.x,
       cy: p.y,
       r: 8.5,
-      fill: 'rgba(10,10,10,0)',
-      stroke: 'rgba(10,10,10,0)',
-      'stroke-width': 1,
-      'data-point-index': idx,
-      style: 'cursor: grab;'
+      fill: "rgba(10,10,10,0)",
+      stroke: "rgba(10,10,10,0)",
+      "stroke-width": 1,
+      "data-point-index": idx,
+      style: "cursor: grab;",
     });
     svg.appendChild(handle);
   });
 
-  const note = svgEl('text', {
-    x: 10, y: 292,
-    fill: '#555',
-    'font-size': 9,
-    'font-family': 'IBM Plex Mono, monospace'
+  const note = svgEl("text", {
+    x: 10,
+    y: 292,
+    fill: "#555",
+    "font-size": 9,
+    "font-family": "IBM Plex Mono, monospace",
   });
-  note.textContent = 'Dashed red circles = solvent offset; blue cells = power diagram; drag points to move balls';
+  note.textContent =
+    "Dashed red circles = solvent offset; blue cells = power diagram; drag points to move balls";
   svg.appendChild(note);
 
-  const summary = document.getElementById('alphaSummary');
+  const summary = document.getElementById("alphaSummary");
   if (summary) {
     summary.textContent = `Alpha=${alpha.toFixed(1)}: ${edges.length} intersecting pairs, ${triangles.length} filled 2-simplex faces, ${balls.length} power cells.`;
   }
@@ -273,25 +308,25 @@ function getSvgPointer(svg, evt) {
 }
 
 function installAlphaFigureInteractions() {
-  const svg = document.getElementById('alphaSvg');
-  const alphaSlider = document.getElementById('alphaSlider');
+  const svg = document.getElementById("alphaSvg");
+  const alphaSlider = document.getElementById("alphaSlider");
   if (!svg || !alphaSlider || alphaFigureState.initialized) return;
   alphaFigureState.initialized = true;
 
   const clamp = (v, mn, mx) => Math.max(mn, Math.min(mx, v));
   const render = () => drawAlphaFigure(Number(alphaSlider.value));
 
-  svg.addEventListener('pointerdown', evt => {
+  svg.addEventListener("pointerdown", (evt) => {
     const t = evt.target;
     if (!(t instanceof Element)) return;
-    const idx = t.getAttribute('data-point-index');
+    const idx = t.getAttribute("data-point-index");
     if (idx == null) return;
     alphaFigureState.dragIndex = Number(idx);
     svg.setPointerCapture(evt.pointerId);
     evt.preventDefault();
   });
 
-  svg.addEventListener('pointermove', evt => {
+  svg.addEventListener("pointermove", (evt) => {
     if (alphaFigureState.dragIndex < 0) return;
     const pos = getSvgPointer(svg, evt);
     const b = alphaFigureState.bounds;
@@ -304,18 +339,18 @@ function installAlphaFigureInteractions() {
   const stopDrag = () => {
     alphaFigureState.dragIndex = -1;
   };
-  svg.addEventListener('pointerup', stopDrag);
-  svg.addEventListener('pointercancel', stopDrag);
+  svg.addEventListener("pointerup", stopDrag);
+  svg.addEventListener("pointercancel", stopDrag);
 }
 
-document.querySelectorAll('.p-tb[data-panel]').forEach(tab => {
-  tab.addEventListener('click', () => {
+document.querySelectorAll(".p-tb[data-panel]").forEach((tab) => {
+  tab.addEventListener("click", () => {
     setPosterPanel(tab.dataset.panel);
   });
 });
 
-const alphaSlider = document.getElementById('alphaSlider');
-const alphaValue = document.getElementById('alphaValue');
+const alphaSlider = document.getElementById("alphaSlider");
+const alphaValue = document.getElementById("alphaValue");
 if (alphaSlider && alphaValue) {
   installAlphaFigureInteractions();
   const render = () => {
@@ -323,39 +358,49 @@ if (alphaSlider && alphaValue) {
     alphaValue.textContent = alpha.toFixed(1);
     drawAlphaFigure(alpha);
   };
-  alphaSlider.addEventListener('input', render);
+  alphaSlider.addEventListener("input", render);
   render();
 }
 
 function initMeshViewer() {
-  const singleView = document.getElementById('meshSingleView');
-  const splitView = document.getElementById('meshSplitView');
-  const singleCanvas = document.getElementById('meshCanvas');
-  const msmsSplitCanvas = document.getElementById('meshCanvasMsms');
-  const alphaSplitCanvas = document.getElementById('meshCanvasAlpha');
-  const summary = document.getElementById('meshSummary');
-  const meshTabsRow = document.getElementById('meshTabsRow');
-  const meshTabs = Array.from(document.querySelectorAll('.p-tb[data-mesh]'));
-  const zoomInBtn = document.getElementById('meshZoomInBtn');
-  const zoomOutBtn = document.getElementById('meshZoomOutBtn');
-  const playPauseBtn = document.getElementById('meshPlayPauseBtn');
-  const splitBtn = document.getElementById('meshSplitBtn');
-  if (!singleView || !splitView || !singleCanvas || !msmsSplitCanvas || !alphaSplitCanvas || !summary || !meshTabsRow || meshTabs.length === 0) return;
+  const singleView = document.getElementById("meshSingleView");
+  const splitView = document.getElementById("meshSplitView");
+  const singleCanvas = document.getElementById("meshCanvas");
+  const msmsSplitCanvas = document.getElementById("meshCanvasMsms");
+  const alphaSplitCanvas = document.getElementById("meshCanvasAlpha");
+  const summary = document.getElementById("meshSummary");
+  const meshTabsRow = document.getElementById("meshTabsRow");
+  const meshTabs = Array.from(document.querySelectorAll(".p-tb[data-mesh]"));
+  const zoomInBtn = document.getElementById("meshZoomInBtn");
+  const zoomOutBtn = document.getElementById("meshZoomOutBtn");
+  const playPauseBtn = document.getElementById("meshPlayPauseBtn");
+  const splitBtn = document.getElementById("meshSplitBtn");
+  if (
+    !singleView ||
+    !splitView ||
+    !singleCanvas ||
+    !msmsSplitCanvas ||
+    !alphaSplitCanvas ||
+    !summary ||
+    !meshTabsRow ||
+    meshTabs.length === 0
+  )
+    return;
   if (!window.THREE) {
-    summary.textContent = '3D viewer unavailable in this browser session.';
+    summary.textContent = "3D viewer unavailable in this browser session.";
     return;
   }
 
   const meshPaths = {
-    msms: 'assets/meshes/1A27_AB_msms.ply',
-    alpha0: 'assets/meshes/1A27_AB_alpha0.ply'
+    msms: "assets/meshes/1A27_AB_msms.ply",
+    alpha0: "assets/meshes/1A27_AB_alpha0.ply",
   };
   const geometryCache = {};
   const geometryPromise = {};
   const meshStats = {};
 
-  let mode = 'single';
-  let currentKey = 'msms';
+  let mode = "single";
+  let currentKey = "msms";
   let rotationEnabled = true;
   let rotationY = 0;
   let zoomFactor = 1;
@@ -368,11 +413,11 @@ function initMeshViewer() {
 
     for (; i < lines.length; i += 1) {
       const line = lines[i].trim();
-      if (line.startsWith('element vertex')) {
+      if (line.startsWith("element vertex")) {
         vertexCount = Number(line.split(/\s+/)[2]);
-      } else if (line.startsWith('element face')) {
+      } else if (line.startsWith("element face")) {
         faceCount = Number(line.split(/\s+/)[2]);
-      } else if (line === 'end_header') {
+      } else if (line === "end_header") {
         i += 1;
         break;
       }
@@ -389,7 +434,7 @@ function initMeshViewer() {
     }
 
     for (let f = 0; f < faceCount; f += 1, i += 1) {
-      const line = (lines[i] || '').trim();
+      const line = (lines[i] || "").trim();
       if (!line) continue;
       const parts = line.split(/\s+/).map(Number);
       const n = parts[0];
@@ -401,13 +446,17 @@ function initMeshViewer() {
     }
 
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indexList);
     return geometry;
   }
 
   function createContext(canvasEl) {
-    const renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvasEl,
+      antialias: true,
+      alpha: true,
+    });
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     const scene = new THREE.Scene();
@@ -428,7 +477,7 @@ function initMeshViewer() {
       root,
       currentMeshObject: null,
       currentRadius: 1,
-      fitDistance: 2.5
+      fitDistance: 2.5,
     };
   }
 
@@ -447,7 +496,9 @@ function initMeshViewer() {
   }
 
   function setActiveMeshTab(key) {
-    meshTabs.forEach(btn => btn.classList.toggle('active', btn.dataset.mesh === key));
+    meshTabs.forEach((btn) =>
+      btn.classList.toggle("active", btn.dataset.mesh === key),
+    );
   }
 
   function normalizeGeometry(geometry) {
@@ -463,7 +514,8 @@ function initMeshViewer() {
   function fitCameraToGeometry(ctx, geometry) {
     geometry.computeBoundingSphere();
     const sphere = geometry.boundingSphere;
-    if (!sphere || !Number.isFinite(sphere.radius) || sphere.radius <= 0) return;
+    if (!sphere || !Number.isFinite(sphere.radius) || sphere.radius <= 0)
+      return;
 
     ctx.currentRadius = sphere.radius;
     const vFov = THREE.MathUtils.degToRad(ctx.camera.fov);
@@ -490,7 +542,7 @@ function initMeshViewer() {
 
   function disposeMeshObject(meshObject) {
     if (!meshObject) return;
-    meshObject.traverse(node => {
+    meshObject.traverse((node) => {
       if (node.geometry) node.geometry.dispose();
       if (node.material) node.material.dispose();
     });
@@ -502,7 +554,7 @@ function initMeshViewer() {
       roughness: 0.8,
       metalness: 0,
       flatShading: false,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.frustumCulled = false;
@@ -512,8 +564,8 @@ function initMeshViewer() {
       new THREE.LineBasicMaterial({
         color: 0x1a1a1b,
         transparent: true,
-        opacity: 0.22
-      })
+        opacity: 0.22,
+      }),
     );
     edgeLines.frustumCulled = false;
     const meshObject = new THREE.Group();
@@ -524,7 +576,7 @@ function initMeshViewer() {
   }
 
   function updateSummary() {
-    if (mode === 'split') {
+    if (mode === "split") {
       const a = meshStats.msms;
       const b = meshStats.alpha0;
       if (a && b) {
@@ -534,31 +586,33 @@ function initMeshViewer() {
     }
     const stats = meshStats[currentKey];
     if (!stats) return;
-    summary.textContent = `${currentKey === 'msms' ? 'MSMS' : 'Alpha α=0'} · ${stats.v} vertices · ${stats.f} faces`;
+    summary.textContent = `${currentKey === "msms" ? "MSMS" : "Alpha α=0"} · ${stats.v} vertices · ${stats.f} faces`;
   }
 
   function ensureGeometry(key) {
     if (geometryCache[key]) return Promise.resolve(geometryCache[key]);
     if (geometryPromise[key]) return geometryPromise[key];
     const path = meshPaths[key];
-    if (!path) return Promise.reject(new Error('Unknown mesh key'));
+    if (!path) return Promise.reject(new Error("Unknown mesh key"));
     geometryPromise[key] = fetch(path)
-      .then(resp => {
-        if (!resp.ok) throw new Error('Mesh fetch failed');
+      .then((resp) => {
+        if (!resp.ok) throw new Error("Mesh fetch failed");
         return resp.text();
       })
-      .then(plyText => {
+      .then((plyText) => {
         const geometry = parseAsciiPly(plyText);
         const normalized = normalizeGeometry(geometry);
-        const vertCount = normalized.getAttribute('position').count;
-        const faceCount = normalized.index ? normalized.index.count / 3 : vertCount / 3;
+        const vertCount = normalized.getAttribute("position").count;
+        const faceCount = normalized.index
+          ? normalized.index.count / 3
+          : vertCount / 3;
         meshStats[key] = { v: vertCount, f: Math.round(faceCount) };
         geometryCache[key] = normalized;
         return normalized;
       })
       .catch(() => {
-        summary.textContent = 'Unable to load mesh file.';
-        throw new Error('Unable to load mesh file.');
+        summary.textContent = "Unable to load mesh file.";
+        throw new Error("Unable to load mesh file.");
       });
     return geometryPromise[key];
   }
@@ -584,20 +638,23 @@ function initMeshViewer() {
 
   async function setSplitMeshes() {
     await Promise.all([
-      setContextMesh(splitMsmsCtx, 'msms'),
-      setContextMesh(splitAlphaCtx, 'alpha0')
+      setContextMesh(splitMsmsCtx, "msms"),
+      setContextMesh(splitAlphaCtx, "alpha0"),
     ]);
     updateSummary();
   }
 
   function updateModeUI() {
-    const isSplit = mode === 'split';
+    const isSplit = mode === "split";
     singleView.hidden = isSplit;
     splitView.hidden = !isSplit;
-    meshTabsRow.style.display = isSplit ? 'none' : '';
+    meshTabsRow.style.display = isSplit ? "none" : "";
     if (splitBtn) {
-      splitBtn.textContent = isSplit ? '1x' : '2x';
-      splitBtn.setAttribute('aria-label', isSplit ? 'Disable split-screen mode' : 'Enable split-screen mode');
+      splitBtn.textContent = isSplit ? "1x" : "2x";
+      splitBtn.setAttribute(
+        "aria-label",
+        isSplit ? "Disable split-screen mode" : "Enable split-screen mode",
+      );
     }
   }
 
@@ -619,9 +676,9 @@ function initMeshViewer() {
     }
   }
 
-  meshTabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (mode !== 'single') return;
+  meshTabs.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (mode !== "single") return;
       if (btn.dataset.mesh && btn.dataset.mesh !== currentKey) {
         setSingleMesh(btn.dataset.mesh);
       }
@@ -629,11 +686,11 @@ function initMeshViewer() {
   });
 
   if (splitBtn) {
-    splitBtn.addEventListener('click', () => {
-      mode = mode === 'single' ? 'split' : 'single';
+    splitBtn.addEventListener("click", () => {
+      mode = mode === "single" ? "split" : "single";
       updateModeUI();
       resizeAll();
-      if (mode === 'split') {
+      if (mode === "split") {
         setSplitMeshes();
       } else {
         setSingleMesh(currentKey);
@@ -642,26 +699,32 @@ function initMeshViewer() {
   }
 
   if (zoomInBtn) {
-    zoomInBtn.addEventListener('click', () => applyZoom(zoomFactor * 0.88));
+    zoomInBtn.addEventListener("click", () => applyZoom(zoomFactor * 0.88));
   }
   if (zoomOutBtn) {
-    zoomOutBtn.addEventListener('click', () => applyZoom(zoomFactor * 1.14));
+    zoomOutBtn.addEventListener("click", () => applyZoom(zoomFactor * 1.14));
   }
   if (playPauseBtn) {
-    playPauseBtn.addEventListener('click', () => {
+    playPauseBtn.addEventListener("click", () => {
       rotationEnabled = !rotationEnabled;
-      playPauseBtn.textContent = rotationEnabled ? '||' : '>';
-      playPauseBtn.setAttribute('aria-label', rotationEnabled ? 'Pause rotation' : 'Resume rotation');
+      playPauseBtn.textContent = rotationEnabled ? "||" : ">";
+      playPauseBtn.setAttribute(
+        "aria-label",
+        rotationEnabled ? "Pause rotation" : "Resume rotation",
+      );
     });
   }
 
   function frame() {
     requestAnimationFrame(frame);
     if (rotationEnabled) rotationY += 0.003;
-    if (singleCtx.currentMeshObject) singleCtx.currentMeshObject.rotation.y = rotationY;
-    if (splitMsmsCtx.currentMeshObject) splitMsmsCtx.currentMeshObject.rotation.y = rotationY;
-    if (splitAlphaCtx.currentMeshObject) splitAlphaCtx.currentMeshObject.rotation.y = rotationY;
-    if (mode === 'split') {
+    if (singleCtx.currentMeshObject)
+      singleCtx.currentMeshObject.rotation.y = rotationY;
+    if (splitMsmsCtx.currentMeshObject)
+      splitMsmsCtx.currentMeshObject.rotation.y = rotationY;
+    if (splitAlphaCtx.currentMeshObject)
+      splitAlphaCtx.currentMeshObject.rotation.y = rotationY;
+    if (mode === "split") {
       splitMsmsCtx.renderer.render(splitMsmsCtx.scene, splitMsmsCtx.camera);
       splitAlphaCtx.renderer.render(splitAlphaCtx.scene, splitAlphaCtx.camera);
     } else {
@@ -671,8 +734,8 @@ function initMeshViewer() {
 
   updateModeUI();
   resizeAll();
-  window.addEventListener('resize', resizeAll);
-  setSingleMesh('msms');
+  window.addEventListener("resize", resizeAll);
+  setSingleMesh("msms");
   frame();
 }
 
