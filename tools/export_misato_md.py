@@ -1,10 +1,9 @@
 """Export one MISATO MD trajectory as per-frame AlphaSurf meshes for the poster viewer.
 
-Run on the cluster, inside the alphasurf environment:
+Run on the cluster through tools/export_misato_md.sh, which sets PYTHONPATH
+to the alphasurf repo and its CGAL bindings:
 
-    python tools/export_misato_md.py \
-        --md-path /cluster/CBIO/data2/vgertner/alphasurf/alphasurf/data/misato/MD.hdf5 \
-        --pdb-id 1A0Q --out-dir assets/md
+    sbatch export_misato_md.sh [--pdb-id 1A0Q]
 
 Without --pdb-id, a mid-sized complex from the official test split is picked.
 Writes assets/md/misato_md.json (manifest) and assets/md/misato_md.bin.
@@ -47,12 +46,12 @@ def pick_default(md, split_file, target_atoms=2200, max_candidates=300):
     with open(split_file) as fh:
         ids = [l.strip() for l in fh if l.strip()][:max_candidates]
     best, best_gap = None, None
+    keys = set(md.keys())
     for pid in ids:
-        try:
-            g = md[lookup(md, pid)]
-            n = int(np.sum(np.asarray(g["atoms_element"]) != 1))
-        except Exception:
+        key = next((k for k in (pid, pid.lower(), pid.upper()) if k in keys), None)
+        if key is None:
             continue
+        n = int(np.sum(np.asarray(md[key]["atoms_element"]) != 1))
         gap = abs(n - target_atoms)
         if best is None or gap < best_gap:
             best, best_gap = pid, gap
