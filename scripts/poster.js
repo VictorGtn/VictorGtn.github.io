@@ -1,13 +1,18 @@
 function setPosterPanel(id) {
-  document
-    .querySelectorAll(".p-panel")
-    .forEach((p) => p.classList.remove("active"));
-  document
-    .querySelectorAll(".p-tb")
-    .forEach((b) => b.classList.remove("active"));
-
-  const panel = document.getElementById("pp" + id);
   const tab = document.querySelector(`.p-tb[data-panel="${id}"]`);
+  const panel = document.getElementById("pp" + id);
+  const group = tab ? tab.closest("[data-tabgroup]") : null;
+  const groupName = group ? group.dataset.tabgroup : null;
+  const scope = (sel) =>
+    groupName
+      ? document.querySelectorAll(`${sel}[data-tabgroup="${groupName}"]`)
+      : document.querySelectorAll(sel);
+  scope(".p-panel").forEach((p) => p.classList.remove("active"));
+  if (group) {
+    group
+      .querySelectorAll(".p-tb[data-panel]")
+      .forEach((b) => b.classList.remove("active"));
+  }
   if (panel) panel.classList.add("active");
   if (tab) tab.classList.add("active");
 }
@@ -375,6 +380,12 @@ function initMeshViewer() {
   const zoomOutBtn = document.getElementById("meshZoomOutBtn");
   const playPauseBtn = document.getElementById("meshPlayPauseBtn");
   const splitBtn = document.getElementById("meshSplitBtn");
+  const dataNote = document.getElementById("meshDataNote");
+  const mdTab = document.querySelector('.p-tb[data-mesh="md"]');
+  const mdControls = document.getElementById("mdControls");
+  const mdPlayBtn = document.getElementById("mdPlayBtn");
+  const mdSlider = document.getElementById("mdFrameSlider");
+  const mdFrameLabel = document.getElementById("mdFrameLabel");
   if (
     !singleView ||
     !splitView ||
@@ -398,6 +409,18 @@ function initMeshViewer() {
   const geometryCache = {};
   const geometryPromise = {};
   const meshStats = {};
+
+  const MD_MANIFEST = "assets/md/misato_md.json";
+  const md = {
+    manifest: null,
+    buffer: null,
+    frames: [],
+    current: 0,
+    playing: true,
+    lastSwitch: 0,
+    object: null,
+    loading: null,
+  };
 
   let mode = "single";
   let currentKey = "msms";
@@ -580,13 +603,20 @@ function initMeshViewer() {
       const a = meshStats.msms;
       const b = meshStats.alpha0;
       if (a && b) {
-        summary.textContent = `MSMS · ${a.v} vertices · ${a.f} faces  |  Alpha α=0 · ${b.v} vertices · ${b.f} faces`;
+        summary.textContent = `MSMS · ${a.v} vertices · ${a.f} faces  |  AlphaSurf α=0 · ${b.v} vertices · ${b.f} faces`;
+      }
+      return;
+    }
+    if (currentKey === "md") {
+      const fr = md.manifest && md.manifest.frames[md.current];
+      if (fr) {
+        summary.textContent = `Frame ${md.current + 1}/${md.manifest.frames.length} · ${fr.nv} vertices · ${fr.nf} faces · ${fr.nl} ligand atoms`;
       }
       return;
     }
     const stats = meshStats[currentKey];
     if (!stats) return;
-    summary.textContent = `${currentKey === "msms" ? "MSMS" : "Alpha α=0"} · ${stats.v} vertices · ${stats.f} faces`;
+    summary.textContent = `${currentKey === "msms" ? "MSMS" : "AlphaSurf α=0"} · ${stats.v} vertices · ${stats.f} faces`;
   }
 
   function ensureGeometry(key) {
@@ -617,19 +647,177 @@ function initMeshViewer() {
     return geometryPromise[key];
   }
 
+  function mdFrameObject(i) {
+    if (md.frames[i]) return md.frames[i];
+    const m = md.manifest;
+    const fr = m.frames[i];
+    const buf = md.buffer;
+    const pos = new Float32Array(buf, fr.v_off, fr.nv * 3);
+    const IndexArray = m.index_dtype === "uint16" ? Uint16Array : Uint32Array;
+    const idx = new IndexArray(buf, fr.f_off, fr.nf * 3);
+    const site = new Uint8Array(buf, fr.site_off, fr.nv);
+    const colors = new Float32Array(fr.nv * 3);
+    const base = new THREE.Color(0xd4dae2);
+    const hot = new THREE.Color(0xd2483f);
+    for (let v = 0; v < fr.nv; v += 1) {
+      const c = site[v] ? hot : base;
+      colors[v * 3] = c.r;
+      colors[v * 3 + 1] = c.g;
+      colors[v * 3 + 2] = c.b;
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geometry.setIndex(new THREE.BufferAttribute(idx, 1));
+    geometry.computeVertexNormals();
+    const surface = new THREE.Mesh(
+      geometry,
+      new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.8,
+        metalness: 0,
+        side: THREE.DoubleSide,
+      }),
+    );
+    surface.frustumCulled = false;
+    const edges = new THREE.LineSegments(
+      new THREE.WireframeGeometry(geometry),
+      new THREE.LineBasicMaterial({
+        color: 0x1a1a1b,
+        transparent: true,
+        opacity: 0.18,
+      }),
+    );
+    edges.frustumCulled = false;
+    const group = new THREE.Group();
+    group.add(surface, edges);
+    if (fr.nl > 0) {
+      const lig = new Float32Array(buf, fr.lig_off, fr.nl * 3);
+      const ligMesh = new THREE.InstancedMesh(
+        new THREE.SphereGeometry(0.75, 10, 8),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1b, roughness: 0.5 }),
+        fr.nl,
+      );
+      const mtx = new THREE.Matrix4();
+      for (let a = 0; a < fr.nl; a += 1) {
+        mtx.makeTranslation(lig[a * 3], lig[a * 3 + 1], lig[a * 3 + 2]);
+        ligMesh.setMatrixAt(a, mtx);
+      }
+      ligMesh.frustumCulled = false;
+      group.add(ligMesh);
+    }
+    group.userData.stats = { v: fr.nv, f: fr.nf };
+    md.frames[i] = group;
+    return group;
+  }
+
+  function loadMd() {
+    if (md.loading) return md.loading;
+    let manifest = null;
+    md.loading = fetch(MD_MANIFEST)
+      .then((r) => {
+        if (!r.ok) throw new Error("no manifest");
+        return r.json();
+      })
+      .then((m) => {
+        manifest = m;
+        return fetch("assets/md/" + m.bin);
+      })
+      .then((r) => {
+        if (!r.ok) throw new Error("no trajectory");
+        return r.arrayBuffer();
+      })
+      .then((buf) => {
+        // Publish both together so the render loop never sees a manifest
+        // without its buffer.
+        md.buffer = buf;
+        md.manifest = manifest;
+        if (mdSlider) {
+          mdSlider.max = String(md.manifest.frames.length - 1);
+          mdSlider.value = "0";
+        }
+        return md;
+      });
+    return md.loading;
+  }
+
+  function showMdFrame(i) {
+    const ctx = singleCtx;
+    const n = md.manifest.frames.length;
+    md.current = ((i % n) + n) % n;
+    const obj = mdFrameObject(md.current);
+    if (ctx.currentMeshObject && ctx.currentMeshObject !== obj) {
+      ctx.root.remove(ctx.currentMeshObject);
+      if (!ctx.currentMeshObject.userData.keep) {
+        disposeMeshObject(ctx.currentMeshObject);
+      }
+    }
+    obj.userData.keep = true;
+    obj.rotation.y = rotationY;
+    ctx.currentMeshObject = obj;
+    ctx.root.add(obj);
+    if (mdSlider) mdSlider.value = String(md.current);
+    if (mdFrameLabel) {
+      const fr = md.manifest.frames[md.current];
+      mdFrameLabel.textContent =
+        fr.time_ns != null ? `${fr.time_ns.toFixed(1)} ns` : `#${fr.index}`;
+    }
+    updateSummary();
+  }
+
+  async function setMdMesh() {
+    currentKey = "md";
+    setActiveMeshTab("md");
+    if (mdControls) mdControls.hidden = false;
+    if (splitBtn) splitBtn.disabled = true;
+    try {
+      await loadMd();
+    } catch (err) {
+      summary.textContent = "Unable to load the MD trajectory.";
+      md.loading = null;
+      return;
+    }
+    if (currentKey !== "md") return;
+    const r = md.manifest.radius;
+    singleCtx.currentRadius = r;
+    const vFov = THREE.MathUtils.degToRad(singleCtx.camera.fov);
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * singleCtx.camera.aspect);
+    singleCtx.fitDistance =
+      1.12 * Math.max(r / Math.sin(vFov / 2), r / Math.sin(hFov / 2));
+    applyZoomToContext(singleCtx);
+    if (dataNote) {
+      dataNote.textContent = `Data: MISATO ${md.manifest.pdb_id.toUpperCase()} · AlphaSurf recomputed on every frame · red = within ${md.manifest.site_cutoff} Å of the ligand`;
+    }
+    showMdFrame(md.current);
+  }
+
+  function leaveMd() {
+    if (mdControls) mdControls.hidden = true;
+    if (splitBtn) splitBtn.disabled = false;
+    if (dataNote) dataNote.textContent = "Data: 1A27_AB";
+    if (singleCtx.currentMeshObject && singleCtx.currentMeshObject.userData.keep) {
+      singleCtx.root.remove(singleCtx.currentMeshObject);
+      singleCtx.currentMeshObject = null;
+    }
+  }
+
   async function setContextMesh(ctx, key) {
     const geometry = await ensureGeometry(key);
     fitCameraToGeometry(ctx, geometry);
     applyZoomToContext(ctx);
     if (ctx.currentMeshObject) {
       ctx.root.remove(ctx.currentMeshObject);
-      disposeMeshObject(ctx.currentMeshObject);
+      if (!ctx.currentMeshObject.userData.keep) {
+        disposeMeshObject(ctx.currentMeshObject);
+      }
     }
     ctx.currentMeshObject = buildMeshObject(geometry);
     ctx.root.add(ctx.currentMeshObject);
   }
 
   async function setSingleMesh(key) {
+    if (key === "md") return setMdMesh();
+    if (currentKey === "md") leaveMd();
     currentKey = key;
     setActiveMeshTab(key);
     await setContextMesh(singleCtx, key);
@@ -662,7 +850,15 @@ function initMeshViewer() {
     resizeContext(singleCtx);
     resizeContext(splitMsmsCtx);
     resizeContext(splitAlphaCtx);
-    if (singleCtx.currentMeshObject && geometryCache[currentKey]) {
+    if (currentKey === "md" && md.manifest) {
+      const r = md.manifest.radius;
+      const vFov = THREE.MathUtils.degToRad(singleCtx.camera.fov);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * singleCtx.camera.aspect);
+      singleCtx.currentRadius = r;
+      singleCtx.fitDistance =
+        1.12 * Math.max(r / Math.sin(vFov / 2), r / Math.sin(hFov / 2));
+      applyZoomToContext(singleCtx);
+    } else if (singleCtx.currentMeshObject && geometryCache[currentKey]) {
       fitCameraToGeometry(singleCtx, geometryCache[currentKey]);
       applyZoomToContext(singleCtx);
     }
@@ -687,6 +883,7 @@ function initMeshViewer() {
 
   if (splitBtn) {
     splitBtn.addEventListener("click", () => {
+      if (currentKey === "md") return;
       mode = mode === "single" ? "split" : "single";
       updateModeUI();
       resizeAll();
@@ -718,6 +915,18 @@ function initMeshViewer() {
   function frame() {
     requestAnimationFrame(frame);
     if (rotationEnabled) rotationY += 0.003;
+    if (
+      currentKey === "md" &&
+      mode === "single" &&
+      md.manifest &&
+      md.playing
+    ) {
+      const now = performance.now();
+      if (now - md.lastSwitch > 140) {
+        md.lastSwitch = now;
+        showMdFrame(md.current + 1);
+      }
+    }
     if (singleCtx.currentMeshObject)
       singleCtx.currentMeshObject.rotation.y = rotationY;
     if (splitMsmsCtx.currentMeshObject)
@@ -730,6 +939,31 @@ function initMeshViewer() {
     } else {
       singleCtx.renderer.render(singleCtx.scene, singleCtx.camera);
     }
+  }
+
+  if (mdPlayBtn) {
+    mdPlayBtn.addEventListener("click", () => {
+      md.playing = !md.playing;
+      mdPlayBtn.textContent = md.playing ? "||" : ">";
+      mdPlayBtn.setAttribute(
+        "aria-label",
+        md.playing ? "Pause trajectory" : "Play trajectory",
+      );
+    });
+  }
+  if (mdSlider) {
+    mdSlider.addEventListener("input", () => {
+      md.playing = false;
+      if (mdPlayBtn) mdPlayBtn.textContent = ">";
+      if (md.manifest) showMdFrame(Number(mdSlider.value));
+    });
+  }
+  if (mdTab) {
+    fetch(MD_MANIFEST, { method: "HEAD" })
+      .then((r) => {
+        if (r.ok) mdTab.hidden = false;
+      })
+      .catch(() => {});
   }
 
   updateModeUI();

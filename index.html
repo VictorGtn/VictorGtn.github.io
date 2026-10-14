@@ -254,7 +254,7 @@
             <div class="modal-box">
                 <div class="modal-header">
                     <span class="modal-title"
-                        >Poster &nbsp;·&nbsp; LMRL @ ICLR 2026</span
+                        >Poster &nbsp;·&nbsp; AlphaSurf &nbsp;·&nbsp; updated 2026</span
                     >
                     <button class="modal-close" id="closePosterBtn">
                         Close ✕
@@ -267,218 +267,193 @@
                         <div class="p-meta">
                             ON-THE-FLY SURFACE COMPUTATIONS FOR PROTEIN
                             REPRESENTATION LEARNING &nbsp;·&nbsp; LMRL @ ICLR
-                            2026 &nbsp;·&nbsp; Gertner · Cazals · Mallet
+                            2026 &nbsp;·&nbsp; UPDATED WITH EXTENDED RESULTS
+                            &nbsp;·&nbsp; Gertner · Cazals · Mallet
                         </div>
                         <div class="p-cols">
                             <div class="p-col">
                                 <div class="p-lbl">Problem</div>
                                 <p class="p-p">
-                                    Surface-based protein ML achieves
-                                    state-of-the-art results, but MSMS-derived
-                                    surfaces are expensive to compute and
-                                    produce oversized meshes — a bottleneck for
-                                    adoption.
+                                    Surface encoders reach state-of-the-art
+                                    results, but they rely on MSMS
+                                    triangulations that are slow and oversized.
+                                    Surfaces end up precomputed and stored,
+                                    which rules out augmentation, molecular
+                                    dynamics and large-scale training.
                                 </p>
                             </div>
                             <div class="p-col">
                                 <div class="p-lbl">Insight</div>
                                 <p class="p-p">
-                                    Selected simplices of Kα encode the
-                                    combinatorial structure of SAS/SES directly
-                                    (caps, arcs, intersection points), so we can
-                                    skip expensive mesh-generation heuristics
-                                    and build learning-ready surfaces on the fly
-                                    in O(n log n).
+                                    The α-complex already encodes the boundary
+                                    of the union of balls. We read a coarse,
+                                    atom-centred mesh straight from ∂|K₀| and
+                                    skip triangulation. <em>Tufting</em> splits
+                                    atoms that expose disconnected patches, so
+                                    heat diffusion does not leak through the
+                                    protein.
                                 </p>
-                                <div class="p-formula">Δ ∈ Kα ⟺ ∩ Rj,α ≠ ∅</div>
+                                <div class="p-formula">SAS = ∂|K₀|, &nbsp;S = {B(xᵢ, rᵢ + r<sub>w</sub>)}</div>
                             </div>
                             <div class="p-col">
                                 <div class="p-lbl">Result</div>
                                 <p class="p-p">
-                                    AlphaSurf replaces MSMS with α-complex
-                                    meshes on-the-fly. Matches accuracy. Cuts
-                                    preprocessing 5× with 14× fewer vertices.
+                                    Meshes in 27 ms with ~1.3K vertices, built
+                                    on the fly during training. Accuracy stays
+                                    on par with MSMS-based surfaces, and new
+                                    uses open up: coordinate-noise
+                                    augmentation, training on MD frames, and
+                                    80× cheaper S3F pretraining.
                                 </p>
                             </div>
                         </div>
                         <div class="p-stats">
                             <div class="p-stat">
-                                <span class="p-bignum">29×</span
-                                ><span class="p-biglbl">speedup vs MSMS</span>
-                            </div>
-                            <div class="p-stat">
-                                <span class="p-bignum">86.1%</span
-                                ><span class="p-biglbl">balanced accuracy</span>
-                            </div>
-                            <div class="p-stat">
-                                <span class="p-bignum">5.3×</span
+                                <span class="p-bignum">27 ms</span
                                 ><span class="p-biglbl"
-                                    >preprocessing reduction</span
+                                    >surface / PINDER protein (MSMS + coarsening:
+                                    258 ms)</span
                                 >
                             </div>
                             <div class="p-stat">
-                                <span class="p-bignum">96ms</span
+                                <span class="p-bignum">10×</span
                                 ><span class="p-biglbl"
-                                    >preprocessing (8 workers)</span
+                                    >fewer vertices than MSMS (1.3K vs 13K)</span
+                                >
+                            </div>
+                            <div class="p-stat">
+                                <span class="p-bignum">86.8</span
+                                ><span class="p-biglbl"
+                                    >MISATO AUROC, training on MD frames</span
+                                >
+                            </div>
+                            <div class="p-stat">
+                                <span class="p-bignum">80×</span
+                                ><span class="p-biglbl"
+                                    >faster S3F surface generation</span
                                 >
                             </div>
                         </div>
                         <div class="p-grid2">
+                            <!-- PINDER TIMINGS -->
                             <div class="p-cell">
-                                <div class="p-lbl">Pipeline</div>
-                                <div class="p-tabs">
-                                    <button class="p-tb active" data-panel="a">
-                                        AtomSurf
+                                <div class="p-lbl">Timings — PINDER</div>
+                                <div class="p-tabs" data-tabgroup="timing">
+                                    <button class="p-tb active" data-panel="gen">
+                                        Surface generation
                                     </button>
-                                    <button class="p-tb" data-panel="b">
-                                        AlphaSurf
+                                    <button class="p-tb" data-panel="pre">
+                                        Full preprocessing
                                     </button>
                                 </div>
-                                <div id="ppa" class="p-panel active">
-                                    <div class="p-pipe">
-                                        <span class="p-ps">Atoms</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps hi">MSMS mesh</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps hi">Coarsen</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps">Features</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps">Output</span>
+                                <div id="ppgen" class="p-panel active" data-tabgroup="timing">
+                                    <div class="p-hchart" style="--max: 300">
+                                        <div class="p-hhead"><span>Method</span><span>ms / protein</span><span>vertices</span></div>
+                                        <div class="p-hrow hl"><span class="p-hl">AlphaSurf</span><span class="p-htrack"><span class="p-hfill" style="--v: 27.1"></span><em>27.1</em></span><span class="p-hn">1,320</span></div>
+                                        <div class="p-hrow"><span class="p-hl">MSMS</span><span class="p-htrack"><span class="p-hfill" style="--v: 122.0"></span><em>122.0</em></span><span class="p-hn">13,112</span></div>
+                                        <div class="p-hrow"><span class="p-hl">MSMS + coarsening</span><span class="p-htrack"><span class="p-hfill" style="--v: 258.0"></span><em>258.0</em></span><span class="p-hn">1,306</span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf gs 0.3</span><span class="p-htrack"><span class="p-hfill" style="--v: 22.9"></span><em>22.9</em></span><span class="p-hn">891</span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf gs 0.4</span><span class="p-htrack"><span class="p-hfill" style="--v: 29.0"></span><em>29.0</em></span><span class="p-hn">1,549</span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf gs 0.5</span><span class="p-htrack"><span class="p-hfill" style="--v: 48.3"></span><em>48.3</em></span><span class="p-hn">2,340</span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf default</span><span class="p-htrack"><span class="p-hfill over" style="--v: 300"></span><em>1,028</em></span><span class="p-hn">31,315</span></div>
+                                        <div class="p-hrow"><span class="p-hl">NanoShaper gs 0.3</span><span class="p-htrack"><span class="p-hfill" style="--v: 51.8"></span><em>51.8</em></span><span class="p-hn">1,320</span></div>
+                                        <div class="p-hrow"><span class="p-hl">NanoShaper gs 0.4</span><span class="p-htrack"><span class="p-hfill" style="--v: 70.9"></span><em>70.9</em></span><span class="p-hn">2,595</span></div>
+                                        <div class="p-hrow"><span class="p-hl">NanoShaper gs 0.5</span><span class="p-htrack"><span class="p-hfill" style="--v: 78.0"></span><em>78.0</em></span><span class="p-hn">4,208</span></div>
+                                        <div class="p-hrow"><span class="p-hl">NanoShaper default</span><span class="p-htrack"><span class="p-hfill over" style="--v: 300"></span><em>739</em></span><span class="p-hn">70,141</span></div>
                                     </div>
-                                    <p class="p-p">
-                                        540 ms (8 CPU) &nbsp;·&nbsp; 3.6K
-                                        vertices &nbsp;·&nbsp; sliver triangles
-                                        present
+                                    <p class="p-note">
+                                        Mean per protein on PINDER monomers. At
+                                        gs 0.3, NanoShaper produces usable
+                                        meshes for fewer than 70% of proteins;
+                                        AlphaSurf for close to 100%, with no
+                                        parameter tuning.
                                     </p>
                                 </div>
-                                <div id="ppb" class="p-panel">
-                                    <div class="p-pipe">
-                                        <span class="p-ps">Atoms</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps hi">α-complex</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps hi">Direct mesh</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps">Features</span
-                                        ><span class="p-pa">→</span
-                                        ><span class="p-ps">Output</span>
+                                <div id="pppre" class="p-panel" data-tabgroup="timing">
+                                    <div class="p-legend">
+                                        <span><i class="s1"></i>surface</span>
+                                        <span><i class="s2"></i>mesh processing</span>
+                                        <span><i class="s3"></i>spectral operators</span>
+                                        <span><i class="s4"></i>geometric features</span>
                                     </div>
-                                    <p class="p-p">
-                                        96 ms (8 CPU) &nbsp;·&nbsp; 2.4K
-                                        vertices &nbsp;·&nbsp; no sliver
-                                        triangles
+                                    <div class="p-hchart" style="--max: 760">
+                                        <div class="p-hrow hl"><span class="p-hl">AlphaSurf</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 27.1"></b><b class="s2" style="--v: 12.4"></b><b class="s3" style="--v: 184.6"></b><b class="s4" style="--v: 28.5"></b></span><em>252.6</em></span></div>
+                                        <div class="p-hrow"><span class="p-hl">MSMS + coarsening</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 122.0"></b><b class="s2" style="--v: 136.0"></b><b class="s3" style="--v: 192.7"></b><b class="s4" style="--v: 28.5"></b></span><em>479.2</em></span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf gs 0.3</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 22.9"></b><b class="s2" style="--v: 8.9"></b><b class="s3" style="--v: 127.6"></b><b class="s4" style="--v: 16.7"></b></span><em>176.1</em></span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf gs 0.4</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 29.0"></b><b class="s2" style="--v: 12.9"></b><b class="s3" style="--v: 185.0"></b><b class="s4" style="--v: 24.8"></b></span><em>251.7</em></span></div>
+                                        <div class="p-hrow"><span class="p-hl">EDTSurf gs 0.5</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 48.3"></b><b class="s2" style="--v: 23.6"></b><b class="s3" style="--v: 343.2"></b><b class="s4" style="--v: 47.9"></b></span><em>463.0</em></span></div>
+                                        <div class="p-hrow"><span class="p-hl">NanoShaper gs 0.4</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 70.9"></b><b class="s2" style="--v: 26.3"></b><b class="s3" style="--v: 375.5"></b><b class="s4" style="--v: 56.8"></b></span><em>529.5</em></span></div>
+                                        <div class="p-hrow"><span class="p-hl">NanoShaper gs 0.5</span><span class="p-htrack"><span class="p-stack"><b class="s1" style="--v: 78.0"></b><b class="s2" style="--v: 39.4"></b><b class="s3" style="--v: 552.8"></b><b class="s4" style="--v: 81.1"></b></span><em>751.3</em></span></div>
+                                    </div>
+                                    <p class="p-note">
+                                        ms per PINDER protein, one process,
+                                        H100 + Xeon 8468. Spectral operators now
+                                        dominate; with 20 CPU workers the
+                                        AlphaSurf pipeline keeps pace with the
+                                        34 ms GPU training step.
                                     </p>
-                                </div>
-                                <hr class="p-divider" />
-                                <div class="p-lbl">
-                                    Preprocessing (8 workers)
-                                </div>
-                                <div style="margin-top: 8px">
-                                    <div class="p-brow">
-                                        <span class="p-blbl">AtomSurf</span>
-                                        <div class="p-btrack">
-                                            <div
-                                                class="p-bfill"
-                                                style="width: 100%"
-                                            ></div>
-                                        </div>
-                                        <span class="p-bval">540ms</span>
-                                    </div>
-                                    <div class="p-brow">
-                                        <span class="p-blbl"
-                                            >AlphaSurf α=0</span
-                                        >
-                                        <div class="p-btrack">
-                                            <div
-                                                class="p-bfill"
-                                                style="width: 17.8%"
-                                            ></div>
-                                        </div>
-                                        <span class="p-bval">96ms</span>
-                                    </div>
-                                    <div class="p-brow">
-                                        <span class="p-blbl"
-                                            >AlphaSurf α=5</span
-                                        >
-                                        <div class="p-btrack">
-                                            <div
-                                                class="p-bfill"
-                                                style="width: 11.1%"
-                                            ></div>
-                                        </div>
-                                        <span class="p-bval">60ms</span>
-                                    </div>
-                                    <div class="p-brow">
-                                        <span class="p-blbl">dMaSIF</span>
-                                        <div class="p-btrack">
-                                            <div
-                                                class="p-bfill"
-                                                style="width: 21.5%"
-                                            ></div>
-                                        </div>
-                                        <span class="p-bval">116ms</span>
-                                    </div>
                                 </div>
                             </div>
+
+                            <!-- PINDER-PAIR -->
                             <div class="p-cell">
-                                <div class="p-lbl">Accuracy — MaSIF-Ligand</div>
+                                <div class="p-lbl">Accuracy — PINDER-Pair</div>
+                                <a class="p-figlink" href="assets/poster/pinder_fig6.webp" target="_blank" rel="noopener noreferrer">
+                                    <img class="p-fig" src="assets/poster/pinder_fig6.webp" alt="MaSIF-Ligand and PINDER-Pair performance versus time per protein for AlphaSurf, EDTSurf, NanoShaper and MSMS" loading="lazy" />
+                                </a>
+                                <p class="p-note">
+                                    Interface-residue AUROC vs. input
+                                    construction time; grey zone = slower than
+                                    the training step. NanoShaper and MSMS lead
+                                    on Holo but drop ~9 points on Apo and AF2.
+                                </p>
                                 <table class="p-table">
                                     <thead>
-                                        <tr>
-                                            <th>Method</th>
-                                            <th>Bal. Acc</th>
-                                        </tr>
+                                        <tr><th>AlphaSurf</th><th>Holo</th><th>Apo</th><th>AF2</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>AtomSurf</td>
-                                            <td>83.0 ± 3.0</td>
-                                        </tr>
-                                        <tr class="hl">
-                                            <td>AlphaSurf α=0</td>
-                                            <td>84.1 ± 2.6</td>
-                                        </tr>
-                                        <tr>
-                                            <td>AlphaSurf α=5</td>
-                                            <td>81.7 ± 0.5</td>
-                                        </tr>
-                                        <tr>
-                                            <td>dMaSIF</td>
-                                            <td>78.3 ± 1.5</td>
-                                        </tr>
+                                        <tr><td>No tufting</td><td>92.12</td><td>86.40</td><td>85.46</td></tr>
+                                        <tr class="hl"><td>Tufting</td><td>92.36</td><td>86.67</td><td>85.96</td></tr>
                                     </tbody>
                                 </table>
-                                <details class="p-repro">
-                                    <summary class="p-repro-summary">
-                                        Repro details
-                                    </summary>
-                                    <div class="p-repro-body">
-                                        <p class="p-p">
-                                            <strong>Dataset:</strong>
-                                            MaSIF-Ligand (1,438 proteins, 7
-                                            classes).
-                                        </p>
-                                        <p class="p-p">
-                                            <strong>Hardware:</strong> standard
-                                            GPU machine with 8 CPU workers for
-                                            preprocessing; V100 GPU for model
-                                            processing.
-                                        </p>
-                                        <p class="p-p">
-                                            <strong>Training setup:</strong>
-                                            same architecture and learning
-                                            protocol as AtomSurf baseline.
-                                        </p>
-                                        <p class="p-p">
-                                            <strong>Reporting:</strong> balanced
-                                            accuracy across 3 seeds;
-                                            preprocessing and processing times
-                                            reported separately.
-                                        </p>
-                                    </div>
-                                </details>
+                                <p class="p-note">
+                                    On-the-fly coordinate noise (σ ≤ 0.5 Å)
+                                    adds +0.5–0.9 AUROC, mostly on Apo and AF2.
+                                </p>
                             </div>
+
+                            <!-- MISATO -->
+                            <div class="p-cell">
+                                <div class="p-lbl">Learning on dynamics — MISATO</div>
+                                <p class="p-p">
+                                    16k protein–ligand MD runs, 100 frames
+                                    each. Training on a random frame per epoch
+                                    means 1.5M meshes and Laplacians, too many
+                                    to store, so they are built on the fly.
+                                    Task: residues within 10 Å of the ligand.
+                                </p>
+                                <table class="p-table">
+                                    <thead>
+                                        <tr><th>Training</th><th>Surface</th><th>F1</th><th>AUROC</th><th>AUPRC</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>DistoDyn†</td><td>–</td><td>46.4</td><td>–</td><td>–</td></tr>
+                                        <tr><td>Holo</td><td>EDTSurf</td><td>42.7</td><td>82.2</td><td>40.0</td></tr>
+                                        <tr><td>Holo</td><td>AlphaSurf</td><td>48.9</td><td>85.7</td><td>47.7</td></tr>
+                                        <tr><td>All frames</td><td>EDTSurf</td><td>43.1</td><td>82.8</td><td>41.0</td></tr>
+                                        <tr class="hl"><td>All frames</td><td>AlphaSurf</td><td>50.3</td><td>86.8</td><td>50.4</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="p-note">
+                                    Tested on holo frames, 3 seeds (std ≤ 0.9).
+                                    † best model of Portal et al. (2026).
+                                    The trained model also stays ahead when
+                                    evaluated on the last MD frame (86.3
+                                    AUROC).
+                                </p>
+                            </div>
+
+                            <!-- SURFACE VIEWER -->
                             <div class="p-cell">
                                 <div class="p-lbl">Surface viewer</div>
                                 <div
@@ -492,7 +467,10 @@
                                         MSMS
                                     </button>
                                     <button class="p-tb" data-mesh="alpha0">
-                                        Alpha α=0
+                                        AlphaSurf
+                                    </button>
+                                    <button class="p-tb" data-mesh="md" hidden>
+                                        MISATO MD
                                     </button>
                                 </div>
                                 <div class="p-mesh-wrap">
@@ -521,7 +499,7 @@
                                         </div>
                                         <div class="p-mesh-panel">
                                             <span class="p-mesh-panel-label"
-                                                >Alpha α=0</span
+                                                >AlphaSurf</span
                                             >
                                             <canvas
                                                 id="meshCanvasAlpha"
@@ -560,9 +538,72 @@
                                         </button>
                                     </div>
                                 </div>
-                                <p class="p-alpha-note">Data: 1A27_AB</p>
+                                <div class="p-md-controls" id="mdControls" hidden>
+                                    <button class="p-mesh-btn" id="mdPlayBtn" aria-label="Pause trajectory">||</button>
+                                    <input class="p-alpha-slider" id="mdFrameSlider" type="range" min="0" max="0" step="1" value="0" aria-label="MD frame" />
+                                    <span class="p-alpha-value" id="mdFrameLabel">0</span>
+                                </div>
+                                <p class="p-alpha-note" id="meshDataNote">Data: 1A27_AB</p>
                                 <p class="p-alpha-note" id="meshSummary"></p>
                             </div>
+
+                            <!-- S3F -->
+                            <div class="p-cell">
+                                <div class="p-lbl">Scale — S3F on ProteinGym</div>
+                                <p class="p-p">
+                                    S3F samples dense dMaSIF point clouds and
+                                    precomputes their operators: millions of
+                                    files, terabytes on disk. Swapping in
+                                    AlphaSurf points, everything else unchanged:
+                                </p>
+                                <table class="p-table">
+                                    <thead>
+                                        <tr><th>Method</th><th>Spearman</th><th>Vertices</th><th>Surface ms</th><th>Fwd+bwd ms</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>S3F</td><td>0.470</td><td>4,136</td><td>424</td><td>56.5</td></tr>
+                                        <tr class="hl"><td>α-S3F</td><td>0.474</td><td>563</td><td>5.2</td><td>23.8</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="p-note">
+                                    217 DMS assays, 2.4M mutations. Pretraining
+                                    on 31,303 CATH domains, 20 workers, one
+                                    H100; times per protein.
+                                </p>
+                                <details class="p-repro">
+                                    <summary class="p-repro-summary">
+                                        Repro details
+                                    </summary>
+                                    <div class="p-repro-body">
+                                        <p class="p-p">
+                                            <strong>Backbone:</strong> AtomSurf
+                                            setup — ProNet residue graph +
+                                            DiffusionNet surface encoder with
+                                            bidirectional communication; only the
+                                            surface mesh changes.
+                                        </p>
+                                        <p class="p-p">
+                                            <strong>PINDER-Pair:</strong> 42,220
+                                            train dimers; test holo/apo/AF2
+                                            1,835/309/1,582; AUROC from the graph
+                                            head; 20 workers.
+                                        </p>
+                                        <p class="p-p">
+                                            <strong>MISATO:</strong>
+                                            13,765/1,595/1,612 complexes; random
+                                            MD frame at train time, frame 0 at
+                                            test.
+                                        </p>
+                                        <p class="p-p">
+                                            <strong>Seeds:</strong> 2024, 2025,
+                                            2026 (S3F: 2024). α-complexes with
+                                            CGAL 6.2.
+                                        </p>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- ALPHA FIGURE -->
                             <div class="p-cell">
                                 <div class="p-lbl">Simplex → SAS boundary</div>
                                 <div class="p-alpha-controls">
