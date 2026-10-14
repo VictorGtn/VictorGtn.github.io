@@ -388,3 +388,17 @@ footer span {
         letter-spacing: 1px;
     }
 }
+
+/* PUBLICATION GROUPS */
+.pub-group + .pub-group {
+    margin-top: 48px;
+}
+.pub-group-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 12px;
+}
