@@ -1,6 +1,11 @@
 /*
  * ASCII protein background.
  *
+ * Inspired by ascii-sharks by stackedlol (https://github.com/stackedlol/ascii-sharks):
+ * the idea of an ASCII cell grid with a light-to-shadow glyph ramp and a
+ * rippling dot field comes from there. This file is an independent
+ * re-implementation for a protein surface; no code was copied.
+ *
  * A MISATO MD trajectory (AlphaSurf mesh recomputed on every frame) is
  * rasterised into a grid of monospace cells and shaded with a glyph ramp:
  * sparse glyphs where the surface faces the light, dense glyphs in shadow.

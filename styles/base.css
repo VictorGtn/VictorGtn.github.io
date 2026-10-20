@@ -417,3 +417,12 @@ footer {
     position: relative;
     z-index: 1;
 }
+
+.footer-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.footer-credit a:hover {
+    color: var(--black);
+}
