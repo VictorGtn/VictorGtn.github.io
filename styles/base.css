@@ -402,3 +402,18 @@ footer span {
     color: var(--black);
     margin-bottom: 12px;
 }
+
+/* ASCII protein background */
+.ascii-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+main,
+footer {
+    position: relative;
+    z-index: 1;
+}
